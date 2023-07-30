@@ -14,6 +14,11 @@
 #include "Camera/CameraComponent.h"
 #include "Camera/CameraActor.h"
 #include "GameFramework/HUD.h"
+#include "Engine/LocalPlayer.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "EnhancedPlayerInput.h"
+#include "InputActionValue.h"
 
 UFramingFollow::UFramingFollow()
 {
@@ -23,6 +28,7 @@ UFramingFollow::UFramingFollow()
 	FollowOffset = FVector(0.0f, 0.0f, 0.0f);
 	bAdaptToMovement = false;
 	AdaptToMovementSpeed = 1.0f;
+	ZoomSettings = FZoomSettings();
 	DampParams = FDampParams();
 	ScreenOffset = FVector2D(0.0f, 0.0f);
 	AdaptiveScreenOffsetDistanceX = FVector2D(200.0f, -100.0f);
@@ -33,6 +39,7 @@ UFramingFollow::UFramingFollow()
 	PreviousResidual = FVector(0.0f, 0.0f, 0.0f);
 	PreviousLocation = FVector(0.0f, 0.0f, 0.0f);
 	ExactSpringVel = FVector(0.0f, 0.0f, 0.0f);
+	CachedZoomValue = 0.0f;
 }
 
 void UFramingFollow::UpdateComponent_Implementation(float DeltaTime)
@@ -67,14 +74,39 @@ void UFramingFollow::UpdateComponent_Implementation(float DeltaTime)
 			AdaptiveCameraDistance = PitchDistanceCurve->GetFloatValue(Pitch);
 		}
 
+		/** If using zooming, override the default camera distance. */
+		if (ZoomSettings.bEnableZoom && ZoomSettings.ZoomAction && Subsystem)
+		{
+			/** Whether CurrentCameraDistance has been initialized. */
+			if (CurrentCameraDistance == -1.0f)
+			{
+				CurrentCameraDistance = CameraDistance;
+			}
+
+			UEnhancedPlayerInput* PlayerInput = Subsystem->GetPlayerInput();
+			if (PlayerInput)
+			{
+				FInputActionValue Value = PlayerInput->GetActionValue(ZoomSettings.ZoomAction);
+				float ZoomValue = Value.Get<float>();
+				CachedZoomValue = CachedZoomValue + GetDampedZoomValue(ZoomValue, DeltaTime);
+
+				float CameraDistanceZoomGain = ZoomSettings.Speed * 10.f * DeltaTime * CachedZoomValue;
+				CurrentCameraDistance = FMath::Clamp(CurrentCameraDistance + CameraDistanceZoomGain, ZoomSettings.DistanceBounds.X, ZoomSettings.DistanceBounds.Y);
+			}
+		}
+		else
+		{
+			CurrentCameraDistance = AdaptiveCameraDistance;
+		}
+
 		/** First move the camera along the local space X axis. */
-		SetForwardDelta(LocalSpaceFollowPosition, TempDeltaPosition, AdaptiveCameraDistance);
+		SetForwardDelta(LocalSpaceFollowPosition, TempDeltaPosition, CurrentCameraDistance);
 
 		/** Then move the camera along the local space YZ plane. */
-		SetYZPlaneDelta(LocalSpaceFollowPosition, TempDeltaPosition, RealScreenOffset);
+		SetYZPlaneDelta(LocalSpaceFollowPosition, TempDeltaPosition, RealScreenOffset, CurrentCameraDistance);
 
 		/** Get damped delta position. */
-		FVector SpringTemporalInput = (LocalSpaceFollowPosition - FVector(AdaptiveCameraDistance, 0, 0)) - PreviousLocation;
+		FVector SpringTemporalInput = (LocalSpaceFollowPosition - FVector(CurrentCameraDistance, 0, 0)) - PreviousLocation;
 		FVector DampedDeltaPosition = DampDeltaPosition(LocalSpaceFollowPosition, SpringTemporalInput, TempDeltaPosition, DeltaTime, RealScreenOffset);
 
 		/** Apply damped delta position. */
@@ -82,7 +114,7 @@ void UFramingFollow::UpdateComponent_Implementation(float DeltaTime)
 
 		/** Cache current position, in local space. */
 		LocalSpaceFollowPosition = UECameraLibrary::GetLocalSpacePosition(GetOwningActor(), FollowPosition);
-		PreviousLocation = LocalSpaceFollowPosition - FVector(AdaptiveCameraDistance, 0, 0);
+		PreviousLocation = LocalSpaceFollowPosition - FVector(CurrentCameraDistance, 0, 0);
 
 		/** Check if adapting to movement. */
 		if (bAdaptToMovement && !HasControlAimInput())
@@ -111,6 +143,9 @@ void UFramingFollow::ResetOnBecomeViewTarget(APlayerController* PC, bool bPreser
 	PreviousResidual = FVector(0.0f, 0.0f, 0.0f);
 	PreviousLocation = FVector(0.0f, 0.0f, 0.0f);
 	ExactSpringVel = FVector(0.0f, 0.0f, 0.0f);
+	CachedZoomValue = 0.0f;
+
+	Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetOwningSettingComponent()->GetPlayerController()->GetLocalPlayer());
 }
 
 FVector2D UFramingFollow::GetAdaptiveScreenOffset(const FVector& FollowPosition, const FVector& AimPosition)
@@ -139,10 +174,10 @@ void UFramingFollow::SetForwardDelta(const FVector& LocalSpaceFollowPosition, FV
 	TempDeltaPosition.X = LocalSpaceFollowPosition.X - RealCameraDistance;
 }
 
-void UFramingFollow::SetYZPlaneDelta(const FVector& LocalSpaceFollowPosition, FVector& TempDeltaPosition, const FVector2D& RealScreenOffset)
+void UFramingFollow::SetYZPlaneDelta(const FVector& LocalSpaceFollowPosition, FVector& TempDeltaPosition, const FVector2D& RealScreenOffset, float RealCamemraDistance)
 {
 	/** Note that CameraDistance is used assuming that the target is already at the CameraDistance place. */
-	float W = UKismetMathLibrary::DegTan(OwningCamera->GetCameraComponent()->FieldOfView / 2.0f) * CameraDistance * 2.0f;
+	float W = UKismetMathLibrary::DegTan(OwningCamera->GetCameraComponent()->FieldOfView / 2.0f) * RealCamemraDistance * 2.0f;
 	float ExpectedPositionY = W * RealScreenOffset.X;
 	float ExpectedPositionZ = W / OwningCamera->GetCameraComponent()->AspectRatio * RealScreenOffset.Y;
 
@@ -172,17 +207,17 @@ FVector UFramingFollow::DampDeltaPosition(const FVector& LocalSpaceFollowPositio
 
 	PreviousResidual = TempDeltaPosition - DampedDeltaPosition;
 
-	EnsureWithinBounds(LocalSpaceFollowPosition, DampedDeltaPosition, RealScreenOffset);
+	EnsureWithinBounds(LocalSpaceFollowPosition, DampedDeltaPosition, RealScreenOffset, CurrentCameraDistance);
 
 	return DampedDeltaPosition;
 }
 
-void UFramingFollow::EnsureWithinBounds(const FVector& LocalSpaceFollowPosition, FVector& DampedDeltaPosition, const FVector2D& RealScreenOffset)
+void UFramingFollow::EnsureWithinBounds(const FVector& LocalSpaceFollowPosition, FVector& DampedDeltaPosition, const FVector2D& RealScreenOffset, float RealCamemraDistance)
 {
 	FVector ResultLocalSpacePosition = LocalSpaceFollowPosition - DampedDeltaPosition;
 
 	/** Same as before. Use CameraDistance as the ground-truth distance. */
-	float Width = UKismetMathLibrary::DegTan(OwningCamera->GetCameraComponent()->FieldOfView / 2.0f) * CameraDistance * 2.0f;
+	float Width = UKismetMathLibrary::DegTan(OwningCamera->GetCameraComponent()->FieldOfView / 2.0f) * RealCamemraDistance * 2.0f;
 	float LeftBound = (RealScreenOffset.X + ScreenOffsetWidth.X) * Width;
 	float RightBound = (RealScreenOffset.X + ScreenOffsetWidth.Y) * Width;
 	float BottomBound = (RealScreenOffset.Y + ScreenOffsetHeight.X) * Width / OwningCamera->GetCameraComponent()->AspectRatio;
@@ -202,4 +237,11 @@ bool UFramingFollow::HasControlAimInput()
 	}
 	
 	return false;
+}
+
+float UFramingFollow::GetDampedZoomValue(const float& ZoomValue, const float& DeltaTime)
+{
+	float Output = 0;
+	UECameraLibrary::DamperValue(FDampParams(), DeltaTime, ZoomValue - CachedZoomValue, ZoomSettings.DampTime, Output);
+	return Output;
 }

@@ -1286,3 +1286,39 @@ public:
 		, bPreserveState(false)
 	{ }
 };
+
+/** A set of parameters controlling camera zooming. For ScreenFollow only. */
+USTRUCT(BlueprintType)
+struct FZoomSettings
+{
+	GENERATED_USTRUCT_BODY()
+
+public:
+	/** Whether to enable zooming. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FZoomSettings")
+	bool bEnableZoom;
+
+	/** The input action to receive zoom input, can be mouse wheels. Ensure this action is correct. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ECamera|FZoomSettings", meta = (EditCondition = "bEnableZoom == true"))
+	class UInputAction* ZoomAction;
+
+	/** The camera distance bounds. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FZoomSettings", meta = (EditCondition = "bEnableZoom == true"))
+	FVector2D DistanceBounds;
+
+	/** Zoom speed (per second) of camera distance when zooming in or out. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FZoomSettings", meta = (EditCondition = "bEnableZoom == true"))
+	float Speed;
+
+	/** Zoom damp time. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FZoomSettings", meta = (EditCondition = "bEnableZoom == true"))
+	float DampTime;
+
+	FZoomSettings()
+		: bEnableZoom(false)
+		, ZoomAction(nullptr)
+		, DistanceBounds(FVector2D(20.0, 1000.0))
+		, Speed(100.f)
+		, DampTime(0.2f)
+	{ }
+};

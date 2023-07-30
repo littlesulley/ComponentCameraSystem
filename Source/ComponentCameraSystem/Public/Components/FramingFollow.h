@@ -8,6 +8,7 @@
 #include "FramingFollow.generated.h"
 
 class UControlAim;
+class UEnhancedInputLocalPlayerSubsystem;
 
 /**
  * FramingFollow keeps a fixed position of the follow target on screen space.
@@ -42,6 +43,10 @@ protected:
 	/** Speed when adapting camera orientation to character movement. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FramingFollow")
 	float AdaptToMovementSpeed;
+
+	/** Zoom settings. Will override PitchDistanceCurve. Be careful. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ScreenFollow")
+	FZoomSettings ZoomSettings;
 
 	/** Damp parameters you want to use for damping. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FramingFollow")
@@ -81,6 +86,12 @@ protected:
 	FVector ExactSpringVel;
 	/** Cached ControlAim component. */
 	UControlAim* ControlAim;
+	/** Current camera distance. */
+	float CurrentCameraDistance = -1.f;
+	/** Cached zoom value. */
+	float CachedZoomValue;
+	/** Enhanched input subsystem. */
+	UEnhancedInputLocalPlayerSubsystem* Subsystem;
 
 public:
 	virtual void UpdateComponent_Implementation(float DeltaTime) override;
@@ -111,15 +122,18 @@ public:
 	void SetForwardDelta(const FVector& LocalSpaceFollowPosition, FVector& TempDeltaPosition, float RealCameraDistance);
 
 	/** Get delta position along the local YZ plane. */
-	void SetYZPlaneDelta(const FVector& LocalSpaceFollowPosition, FVector& TempDeltaPosition, const FVector2D& RealScreenOffset);
+	void SetYZPlaneDelta(const FVector& LocalSpaceFollowPosition, FVector& TempDeltaPosition, const FVector2D& RealScreenOffset, float RealCameraDistance);
 
 	/** Damp temporary delta position. */
 	FVector DampDeltaPosition(const FVector& LocalSpaceFollowPosition, const FVector& SpringTemporalInput, const FVector& TempDeltaPosition, float DeltaTime, const FVector2D& RealScreenOffset);
 
 	/** Ensure after damping, the follow target will be within the bound. */
-	void EnsureWithinBounds(const FVector& LocalSpaceFollowPosition, FVector& DampedDeltaPosition, const FVector2D& RealScreenOffset);
+	void EnsureWithinBounds(const FVector& LocalSpaceFollowPosition, FVector& DampedDeltaPosition, const FVector2D& RealScreenOffset, float RealCameraDistance);
 
 	/** Check whether has mouse input. */
 	bool HasControlAimInput();
+
+	/** Get damped zoom value. */
+	float GetDampedZoomValue(const float& ZoomValue, const float& DeltaTime);
 };
 
