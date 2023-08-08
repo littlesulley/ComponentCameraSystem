@@ -208,6 +208,11 @@ void AEPlayerCameraManager::DoDitherFade(float DeltaTime)
 
 TArray<FHitResult> AEPlayerCameraManager::DoDitherCollisionCheck(AActor* Target, float MaxLength, TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes)
 {
+	if (ObjectTypes.Num() == 0)
+	{
+		return TArray<FHitResult>();
+	}
+
 	FVector Start = GetCameraLocation();
 	FVector End = Target->GetActorLocation();
 
