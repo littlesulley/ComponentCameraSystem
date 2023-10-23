@@ -138,6 +138,15 @@ UECameraComponentFollow* UECameraSettingsComponent::GetFollowComponent() const
 	return FollowComponent;
 }
 
+void UECameraSettingsComponent::SetFollowComponent(UECameraComponentFollow* InFollowComponent)
+{
+	if (IsValid(InFollowComponent))
+	{
+		FollowComponent = InFollowComponent;
+		FollowComponent->SetFollowTarget(FollowTarget);
+	}
+}
+
 AActor* UECameraSettingsComponent::SetAimTarget(AActor* NewAimTarget)
 {
 	AimTarget = NewAimTarget;
@@ -154,8 +163,7 @@ UECameraExtensionBase* UECameraSettingsComponent::GetExtensionOfClass(TSubclassO
 {
 	UECameraExtensionBase* Result = nullptr;
 
-	TArray<UECameraExtensionBase*> OwningExtensions = GetExtensions();
-	for (UECameraExtensionBase* Extension : OwningExtensions)
+	for (UECameraExtensionBase* Extension : Extensions)
 	{
 		if (IsValid(Extension) && Extension->IsA(ExtensionClass->GetOwnerClass()))
 		{
@@ -167,6 +175,22 @@ UECameraExtensionBase* UECameraSettingsComponent::GetExtensionOfClass(TSubclassO
 	return Result;
 }
 
+void UECameraSettingsComponent::AddExtension(UECameraExtensionBase* InExtension)
+{
+	if (IsValid(InExtension))
+	{
+		for (UECameraExtensionBase* Extension : Extensions)
+		{
+			if (Extension == InExtension)
+			{
+				return;
+			}
+		}
+
+		Extensions.Add(InExtension);
+	}
+}
+
 AActor* UECameraSettingsComponent::GetAimTarget() const
 {
 	return AimTarget;
@@ -175,6 +199,15 @@ AActor* UECameraSettingsComponent::GetAimTarget() const
 UECameraComponentAim* UECameraSettingsComponent::GetAimComponent() const
 {
 	return AimComponent;
+}
+
+void UECameraSettingsComponent::SetAimComponent(UECameraComponentAim* InAimComponent)
+{
+	if (IsValid(InAimComponent))
+	{
+		AimComponent = InAimComponent;
+		AimComponent->SetAimTarget(AimTarget);
+	}
 }
 
 TArray<UECameraExtensionBase*> UECameraSettingsComponent::GetExtensions() const

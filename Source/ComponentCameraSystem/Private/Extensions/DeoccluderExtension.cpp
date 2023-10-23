@@ -19,8 +19,8 @@ UDeoccluderExtension::UDeoccluderExtension()
 	OccluderParams = FOccluderParams();
 	MinimumDistanceFromTarget = 0.0f;
 	CameraDistanceFromOcclusion = 0.0f;
-	OcclusionDamping = 0.0f;
-	RestoreDamping = 0.0f;
+	OcclusionDamping = 0.5f;
+	RestoreDamping = 0.5f;
 
 	OcclusionElapsedTime = 0.0f;
 	CachedRawLocation = FVector(0, 0, 0);

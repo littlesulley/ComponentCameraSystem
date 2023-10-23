@@ -7,5 +7,5 @@
 AEAnimatedCamera::AEAnimatedCamera(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	AnimatedCameraExtension = NewObject<UAnimatedCameraExtension>();
-	CameraSettingsComponent->Extensions.Add(Cast<UECameraExtensionBase>(AnimatedCameraExtension));
+	CameraSettingsComponent->AddExtension(AnimatedCameraExtension);
 }

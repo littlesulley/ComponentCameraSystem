@@ -16,6 +16,7 @@ UTargetingAim::UTargetingAim()
 
 	bLocalRotation = false;
 	AimOffset = FVector(0.0f, 0.0f, 0.0f);
+	AdditionalAimOffset = FVector(0.0f, 0.0f, 0.0f);
 	DampParams = FDampParams();
 	ScreenOffset = FVector2D(0.0f, 0.0f);
 	ScreenOffsetWidth = FVector2D(-0.1f, 0.1f);
@@ -66,9 +67,13 @@ void UTargetingAim::SetDeltaRotation(const FVector& AimPosition, FRotator& TempD
 	/** Version 1: Rotate at world space. */
 	if (!bLocalRotation)
 	{
-		FRotator CenteredDeltaRotation = UKismetMathLibrary::NormalizedDeltaRotator(UKismetMathLibrary::FindLookAtRotation(GetOwningActor()->GetActorLocation(), AimPosition), GetOwningActor()->GetActorRotation());
-		TempDeltaRotation.Yaw = CenteredDeltaRotation.Yaw - ScreenOffset.X * OwningCamera->GetCameraComponent()->FieldOfView;
-		TempDeltaRotation.Pitch = CenteredDeltaRotation.Pitch - ScreenOffset.Y * 2.0f * UKismetMathLibrary::DegAtan(UKismetMathLibrary::DegTan(OwningCamera->GetCameraComponent()->FieldOfView / 2) / OwningCamera->GetCameraComponent()->AspectRatio);
+		FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetOwningActor()->GetActorLocation(), AimPosition);
+		FRotator CenteredDeltaRotation = UKismetMathLibrary::NormalizedDeltaRotator(LookAtRotation, GetOwningActor()->GetActorRotation());
+
+		float TanHalfFOV = UKismetMathLibrary::DegTan(OwningCamera->GetCameraComponent()->FieldOfView / 2);
+		TempDeltaRotation.Yaw = CenteredDeltaRotation.Yaw - UKismetMathLibrary::DegAtan(2.0 * ScreenOffset.X * TanHalfFOV);
+		TempDeltaRotation.Pitch = CenteredDeltaRotation.Pitch - UKismetMathLibrary::DegAtan(2.0 * ScreenOffset.Y * TanHalfFOV / OwningCamera->GetCameraComponent()->AspectRatio);
+
 		TempDeltaRotation.Roll = 0;
 	}
 
@@ -104,11 +109,11 @@ FRotator UTargetingAim::DampDeltaRotation(const FRotator& TempDeltaRotation, flo
 
 void UTargetingAim::EnsureWithinBounds(FRotator& DampedDeltaRotation, const FVector& AimPosition)
 {
-	double VFieldOfView = 2.0f * UKismetMathLibrary::DegAtan(UKismetMathLibrary::DegTan(OwningCamera->GetCameraComponent()->FieldOfView / 2) / OwningCamera->GetCameraComponent()->AspectRatio);
-	double LeftBound = (ScreenOffset.X + ScreenOffsetWidth.X) * OwningCamera->GetCameraComponent()->FieldOfView;
-	double RightBound = (ScreenOffset.X + ScreenOffsetWidth.Y) * OwningCamera->GetCameraComponent()->FieldOfView;
-	double BottomBound = (ScreenOffset.Y + ScreenOffsetHeight.X) * VFieldOfView;
-	double TopBound = (ScreenOffset.Y + ScreenOffsetHeight.Y) * VFieldOfView;
+	float TanHalfFOV = UKismetMathLibrary::DegTan(OwningCamera->GetCameraComponent()->FieldOfView / 2);
+	double LeftBound = UKismetMathLibrary::DegAtan(2.0 * (ScreenOffset.X + ScreenOffsetWidth.X) * TanHalfFOV);
+	double RightBound = UKismetMathLibrary::DegAtan(2.0 * (ScreenOffset.X + ScreenOffsetWidth.Y) * TanHalfFOV);
+	double BottomBound = UKismetMathLibrary::DegAtan(2.0 * (ScreenOffset.Y + ScreenOffsetHeight.X) * TanHalfFOV / OwningCamera->GetCameraComponent()->AspectRatio);
+	double TopBound = UKismetMathLibrary::DegAtan(2.0 * (ScreenOffset.Y + ScreenOffsetHeight.Y) * TanHalfFOV / OwningCamera->GetCameraComponent()->AspectRatio);
 
 	FQuat DesiredQuat = GetOwningActor()->GetActorRotation().Quaternion();
 	DesiredQuat = FQuat(FRotator(0, DampedDeltaRotation.Yaw, 0)) * DesiredQuat * FQuat(FRotator(DampedDeltaRotation.Pitch, 0, 0));

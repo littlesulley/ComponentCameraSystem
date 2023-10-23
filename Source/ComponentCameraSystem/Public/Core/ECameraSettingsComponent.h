@@ -37,7 +37,6 @@ class COMPONENTCAMERASYSTEM_API UECameraSettingsComponent : public USceneCompone
 public:
 	UECameraSettingsComponent();
 	friend class AECameraBase;  // Should I use friend or not?
-	friend class AEAnimatedCamera;
 	friend class AEKeyframeCamera;
 
 public:
@@ -111,11 +110,18 @@ public:
 	UFUNCTION(BlueprintPure, Category = "ECamera|Settings", meta = (DeterminesOutputType = "ExtensionClass"))
 	UECameraExtensionBase* GetExtensionOfClass(TSubclassOf<UECameraExtensionBase> ExtensionClass);
 
+	/** Add an extension. If this extension already exists, won't add it. */
+	UFUNCTION(BlueprintCallable, Category = "ECamera|Settings")
+	void AddExtension(UECameraExtensionBase* InExtension);
+
 	/** Get ECamera manager. */
 	AECameraManager* GetECameraManager() const;
 
 	/** Get FollowComponent. */
 	UECameraComponentFollow* GetFollowComponent() const;
+
+	/** Set FollowComponent. */
+	void SetFollowComponent(UECameraComponentFollow* InFollowComponent);
 
 	/** Get follow target. */
 	AActor* GetFollowTarget() const;
@@ -125,6 +131,9 @@ public:
 
 	/** Get AimComponent. */
 	UECameraComponentAim* GetAimComponent() const;
+
+	/** Set AimComponent. */
+	void SetAimComponent(UECameraComponentAim* InAimComponent);
 
 	/** Get Extensions. */
 	TArray<UECameraExtensionBase*> GetExtensions() const;

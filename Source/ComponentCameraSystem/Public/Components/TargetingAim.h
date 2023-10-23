@@ -22,9 +22,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TargetingAim")
 	bool bLocalRotation;
 
-	/** World space position offset applied to the aim target. */
+	/** User-specified world space position offset applied to the aim target. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TargetingAim")
 	FVector AimOffset;
+
+	/** Additional offset applied to the aim target. This can be modified by other components. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TargetingAim")
+	FVector AdditionalAimOffset;
 
 	/** Damp parameters you want to use for damping. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TargetingAim")
@@ -47,11 +51,17 @@ protected:
 public:
 	virtual void UpdateComponent_Implementation(float DeltaTime) override;
 
+	/** Get original aim position, without AdditionalAimOffset. */
+	FVector GetOriginalAimPosition() { return AimTarget->GetActorLocation() + AimOffset; }
+
 	/** Get the *real* aim position, based on world space. */
-	virtual FVector GetRealAimPosition() override { return AimTarget->GetActorLocation() + AimOffset; }
+	virtual FVector GetRealAimPosition() override { return AimTarget->GetActorLocation() + AimOffset + AdditionalAimOffset; }
 
 	/** Get the real aim position. */
 	FVector GetAimPosition() { return RealAimPosition; }
+
+	/** Get AimOffset. */
+	FVector GetAimOffset() const { return AimOffset; }
 
 	/** Get screen offset. */
 	FVector2D GetScreenOffset() { return ScreenOffset; }
@@ -61,6 +71,12 @@ public:
 
 	/** Get screen offset height. */
 	FVector2D GetScreenOffsetHeight() { return ScreenOffsetHeight; }
+
+	/** Set additional aim offset. */
+	void SetAdditionalAimOffset(FVector InOffset) { AdditionalAimOffset = InOffset; }
+
+	/** Set additional aim offset. */
+	void SetAdditionalAimOffset(float InX = 0, float InY = 0, float InZ = 0) { AdditionalAimOffset.X = InX, AdditionalAimOffset.Y = InY, AdditionalAimOffset.Z = InZ; }
 
 	/** Check if camera is too close to the aim target. */
 	bool CheckIfTooClose(const FVector& AimPosition);
