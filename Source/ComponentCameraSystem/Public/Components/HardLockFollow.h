@@ -7,7 +7,8 @@
 #include "HardLockFollow.generated.h"
 
 /**
- * HardLockFollow uses the location of the follow target.
+ * HardLockFollow uses the location of the follow target (or some socket).
+ * It is the no-mask no-damping local-space version of SimpleFollow.
  */
 UCLASS(Blueprintable, BlueprintType, classGroup = "ECamera")
 class COMPONENTCAMERASYSTEM_API UHardLockFollow : public UECameraComponentFollow

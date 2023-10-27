@@ -14,7 +14,6 @@ void UHardLockFollow::UpdateComponent_Implementation(float DeltaTime)
 {
 	if (FollowTarget != nullptr)
 	{
-		FVector FollowPosition = FollowTarget->GetActorLocation() + UKismetMathLibrary::GreaterGreater_VectorRotator(FollowOffset, FollowTarget->GetActorRotation());
-		GetOwningActor()->SetActorLocation(FollowPosition);
+		GetOwningActor()->SetActorLocation(GetRealFollowPosition(FollowOffset));
 	}
 }

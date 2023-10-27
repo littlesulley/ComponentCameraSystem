@@ -20,12 +20,6 @@ public:
 	USimpleFollow();
 
 protected:
-	/** Follow target's socket you want the camera to follow. 
-	 *  If this field is empty, the camera will still track the follow target's root transform. 
-	 */ 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SimpleFollow")
-	FString SocketName;
-
 	/** How do you want to follow the target. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SimpleFollow")
 	ESimpleFollowType FollowType;
@@ -51,7 +45,7 @@ public:
 	virtual void UpdateComponent_Implementation(float DeltaTime) override;
 
 	/** Get the real follow location. */
-	FVector GetRealFollowLocation();
+	FVector GetRealFollowPosition(const FVector& Offset) override;
 
 	/** Damp temporary delta position. */
 	FVector DampDeltaPosition(const FVector& TempDeltaPosition, float DeltaTime);

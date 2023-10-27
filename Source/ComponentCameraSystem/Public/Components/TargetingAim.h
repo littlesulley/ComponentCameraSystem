@@ -52,13 +52,10 @@ public:
 	virtual void UpdateComponent_Implementation(float DeltaTime) override;
 
 	/** Get original aim position, without AdditionalAimOffset. */
-	FVector GetOriginalAimPosition() { return AimTarget->GetActorLocation() + AimOffset; }
+	FVector GetOriginalAimPosition() { return UECameraComponentAim::GetRealAimPosition() + AimOffset; }
 
 	/** Get the *real* aim position, based on world space. */
-	virtual FVector GetRealAimPosition() override { return AimTarget->GetActorLocation() + AimOffset + AdditionalAimOffset; }
-
-	/** Get the real aim position. */
-	FVector GetAimPosition() { return RealAimPosition; }
+	virtual FVector GetRealAimPosition() override { return UECameraComponentAim::GetRealAimPosition() + AimOffset + AdditionalAimOffset; }
 
 	/** Get AimOffset. */
 	FVector GetAimOffset() const { return AimOffset; }

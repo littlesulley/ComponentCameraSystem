@@ -46,7 +46,7 @@ void UFramingFollow::UpdateComponent_Implementation(float DeltaTime)
 {
 	if (FollowTarget != nullptr)
 	{
-		FVector FollowPosition = UECameraLibrary::GetPositionWithLocalOffset(FollowTarget.Get(), FollowOffset);
+		FVector FollowPosition = GetRealFollowPosition(FollowOffset);
 
 		/** Get real screen offset. */
 		FVector AimPosition = FVector(0, 0, 0);
@@ -55,7 +55,7 @@ void UFramingFollow::UpdateComponent_Implementation(float DeltaTime)
 			GetOwningSettingComponent()->GetAimComponent()->IsA<class UTargetingAim>() &&
 			GetOwningSettingComponent()->GetAimComponent()->GetAimTarget() != nullptr)
 		{
-			AimPosition = GetOwningSettingComponent()->GetAimComponent()->GetRealAimPosition();
+			AimPosition = Cast<UTargetingAim>(GetOwningSettingComponent()->GetAimComponent())->GetOriginalAimPosition();
 			RealScreenOffset = GetAdaptiveScreenOffset(FollowPosition, AimPosition);
 		}
 		else RealScreenOffset = ScreenOffset;

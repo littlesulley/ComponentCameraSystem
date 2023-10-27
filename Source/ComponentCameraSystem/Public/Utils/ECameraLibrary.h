@@ -383,6 +383,8 @@ public:
 	 * @param SpawnRotation - The rotation the camera should be initialized with. Will be (0,0,0) if not set.
 	 * @param FollowTarget - The target actor passed into the follow component. Can be null if this camera does not have a follow component.
 	 * @param AimTarget - The target actor passed into the aim component. Can be null if this camera does not have an aim component.
+	 * @param FollowSocket - Optional socket name. If specified, will use this socket's transform instead of the follow target's. Should be careful of the socket's rotation.
+	 * @param AimSocket - Optional socket name. If specified, will use this socket's transform instead of the aim target's. Should be careful of the socket's rotation.
 	 * @param BlendTime - Blend-in time used for transitioning from the current active camera to the new camera.
 	 * @param BlendFunc - Which type of blend function to use.
 	 * @param BlendExp - Blend exponential.
@@ -392,7 +394,7 @@ public:
 	 * @param bPreserveState - Whether the incoming camera tries to preserve outgoing camera's location and rotation. If you specified SpawnLocation and SpawnRotation, you should switch this off.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "ECamera|Utils", meta = (DisplayName = "CallCamera", WorldContext = "WorldContextObject", DeterminesOutputType = "CameraClass", AdvancedDisplay = 6, HidePin = "ParentCamera"))
-	static AECameraBase* CallCamera(const UObject* WorldContextObject, TSubclassOf<AECameraBase> CameraClass, FVector SpawnLocation, FRotator SpawnRotation, AActor* FollowTarget, AActor* AimTarget, float BlendTime, enum EViewTargetBlendFunction BlendFunc, float BlendExp, bool bLockOutgoing, bool bIsTransitory = false, float LifeTime = 0.0f, bool bPreserveState = false, AActor* ParentCamera = nullptr);
+	static AECameraBase* CallCamera(const UObject* WorldContextObject, TSubclassOf<AECameraBase> CameraClass, FVector SpawnLocation, FRotator SpawnRotation, AActor* FollowTarget, AActor* AimTarget, FName FollowSocket, FName AimSocket, float BlendTime, enum EViewTargetBlendFunction BlendFunc, float BlendExp, bool bLockOutgoing, bool bIsTransitory = false, float LifeTime = 0.0f, bool bPreserveState = false, AActor* ParentCamera = nullptr);
 
 	/** Call an animated camera, i.e., driven by an animation sequence. This is usually used inside a skill.
 	 * @param AnimToPlay - The animation sequence you want to play on camera.

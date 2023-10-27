@@ -98,6 +98,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "ECamera|Settings")
 	AActor* SetFollowTarget(AActor* NewFollowTarget);
 
+	/** Set follow socket. Also sets FollowComponent's follow socket. */
+	UFUNCTION(BlueprintCallable, Category = "ECamera|Settings")
+	FName SetFollowSocket(FName NewFollowSocket);
+
 	/** Get player camera manager. */
 	UFUNCTION(BlueprintPure, Category = "ECamera|Settings")
 	APlayerCameraManager* GetPlayerCameraManager() const;
@@ -105,6 +109,10 @@ public:
 	/** Set aim target. Also sets AimComponent's aim target. */
 	UFUNCTION(BlueprintCallable, Category = "ECamera|Settings")
 	AActor* SetAimTarget(AActor* NewAimTarget);
+
+	/** Set follow socket. Also sets FollowComponent's follow socket. */
+	UFUNCTION(BlueprintCallable, Category = "ECamera|Settings")
+	FName SetAimSocket(FName NewAimSocket);
 
 	/** Get extension of specified class. */
 	UFUNCTION(BlueprintPure, Category = "ECamera|Settings", meta = (DeterminesOutputType = "ExtensionClass"))

@@ -128,6 +128,16 @@ AActor* UECameraSettingsComponent::SetFollowTarget(AActor* NewFollowTarget)
 	return NewFollowTarget;
 }
 
+FName UECameraSettingsComponent::SetFollowSocket(FName NewFollowSocket)
+{
+	if (IsValid(FollowComponent))
+	{
+		return FollowComponent->SetFollowSocket(NewFollowSocket);
+	}
+
+	return NAME_None;
+}
+
 AActor* UECameraSettingsComponent::GetFollowTarget() const
 {
 	return FollowTarget;
@@ -157,6 +167,16 @@ AActor* UECameraSettingsComponent::SetAimTarget(AActor* NewAimTarget)
 	}
 
 	return NewAimTarget;
+}
+
+FName UECameraSettingsComponent::SetAimSocket(FName NewAimSocket)
+{
+	if (IsValid(AimComponent))
+	{
+		return AimComponent->SetAimSocket(NewAimSocket);
+	}
+
+	return NAME_None;
 }
 
 UECameraExtensionBase* UECameraSettingsComponent::GetExtensionOfClass(TSubclassOf<UECameraExtensionBase> ExtensionClass)

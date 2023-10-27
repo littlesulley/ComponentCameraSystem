@@ -50,9 +50,6 @@ void UTargetingAim::UpdateComponent_Implementation(float DeltaTime)
 
 		}
 		else GetOwningActor()->AddActorLocalRotation(DampedDeltaRotation);
-
-		/** Update variables for HUD. */
-		RealAimPosition = AimPosition;
 	}
 }
 

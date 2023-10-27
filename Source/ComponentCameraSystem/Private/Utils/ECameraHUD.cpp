@@ -121,7 +121,7 @@ void AECameraHUD::DrawHUD()
 
 					DrawRectOnScreenWithOffset(RectColor, ScreenOffset, ScreenOffsetWidth, ScreenOffsetHeight);
 
-					FVector WorldLocation = TargetingAim->GetAimPosition();
+					FVector WorldLocation = TargetingAim->GetRealAimPosition();
 					DrawRectOnScreenWithPosition(AimPositionColor, WorldLocation);
 				}
 				/** For ControlAim. */

@@ -19,7 +19,7 @@ void UHardLockAim::UpdateComponent_Implementation(float DeltaTime)
 	{
 		/** Get desired rotation and quaternion. */
 		FQuat CurrentQuat = GetOwningActor()->GetActorQuat();
-		FQuat DesiredQuat = AimTarget->GetActorQuat() * FQuat(RotationOffset);
+		FQuat DesiredQuat = GetRealAimTransform().GetRotation() * FQuat(RotationOffset);
 
 		FQuat DampedQuat;
 		UECameraLibrary::DamperQuaternion(CurrentQuat, DesiredQuat, DeltaTime, QuatDamping, DampedQuat);

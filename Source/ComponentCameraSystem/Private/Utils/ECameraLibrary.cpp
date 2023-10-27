@@ -482,6 +482,8 @@ AECameraBase* UECameraLibrary::CallCamera(const UObject* WorldContextObject,    
 										  FRotator SpawnRotation,                   // Spawn rotation, default is identity.
 										  AActor* FollowTarget,                     // Follow target, can be null.
 									      AActor* AimTarget,                        // Aim target, can be null.
+										  FName FollowSocket,                       // Socket name for follow target, can be none.
+										  FName AimSocket,                          // Socket name for aim target, can be none.
 										  float BlendTime,                          // Blend time from prior camera.
 										  enum EViewTargetBlendFunction BlendFunc,  // Blend function.
 										  float BlendExp,							// Blend exponential.
@@ -515,7 +517,9 @@ AECameraBase* UECameraLibrary::CallCamera(const UObject* WorldContextObject,    
 	}
 
 	Camera->GetSettingsComponent()->SetFollowTarget(FollowTarget);
+	Camera->GetSettingsComponent()->SetFollowSocket(FollowSocket);
 	Camera->GetSettingsComponent()->SetAimTarget(AimTarget);
+	Camera->GetSettingsComponent()->SetAimSocket(AimSocket);
 
 	/** Set camera location and rotation. */
 	Camera->SetActorLocation(SpawnLocation);

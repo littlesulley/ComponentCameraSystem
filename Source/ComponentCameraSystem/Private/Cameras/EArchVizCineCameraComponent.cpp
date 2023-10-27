@@ -43,7 +43,7 @@ void UEArchVizCineCameraComponent::PostEditChangeProperty(FPropertyChangedEvent&
 	{
 		const FName PropertyName(PropertyChangedEvent.Property->GetName());
 
-		if (PropertyName == GET_MEMBER_NAME_CHECKED(UEArchVizCameraComponent, PerspectiveStrength))
+		if (PropertyName == GET_MEMBER_NAME_CHECKED(UEArchVizCineCameraComponent, PerspectiveStrength))
 		{
 			// @TODO: Placeholder for future implementation, if needed
 		}

@@ -182,7 +182,19 @@ float URailFollow::GetNormalizedPositionOnRailNearestToTarget(AActor* Target)
 	USplineComponent* Spline = Rail->GetRailSplineComponent();
 
 	/** Get posiiton on rail. */
-	float Position = Spline->FindInputKeyClosestToWorldLocation(Target->GetActorLocation());
+	FVector FollowPosition = FVector::ZeroVector;
+
+	if (Target == FollowTarget.Get())
+	{
+		FollowPosition = GetRealFollowPosition(FVector::ZeroVector);
+	}
+	else
+	{
+		FollowPosition = Target->GetActorLocation();
+	}
+
+	float Position = Spline->FindInputKeyClosestToWorldLocation(FollowPosition);
+
 
 	/** Get number of splines. */
 	int SplineNumber = Spline->IsClosedLoop() ? Spline->GetNumberOfSplinePoints() : Spline->GetNumberOfSplinePoints() - 1;

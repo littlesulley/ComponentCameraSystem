@@ -1253,6 +1253,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ECamera|FECameraClassWithTargetsAndBlending")
 	TSubclassOf<AActor> AimTargetType;
 
+	
+	/** Optional follow target socket. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ECamera|FECameraClassWithTargetsAndBlending")
+	FName FollowSocket;
+
+	/** Optional aim target socket. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ECamera|FECameraClassWithTargetsAndBlending")
+	FName AimSocket;
+
 	/** Duration of this camera. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ECamera|FECameraClassWithTargetsAndBlending")
 	float Duration;

@@ -83,6 +83,8 @@ void AESequencedCameraSetupActor::UpdateCamera()
 		FRotator::ZeroRotator,
 		FollowTarget,
 		AimTarget,
+		CameraSequence[CameraIndex].FollowSocket,
+		CameraSequence[CameraIndex].AimSocket,
 		CameraSequence[CameraIndex].BlendTime,
 		CameraSequence[CameraIndex].BlendFunc,
 		CameraSequence[CameraIndex].BlendExp,

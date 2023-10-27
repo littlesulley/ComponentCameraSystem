@@ -23,7 +23,7 @@ void USimpleFollow::UpdateComponent_Implementation(float DeltaTime)
 	if (FollowTarget != nullptr)
 	{
 		/** Get the *real* follow position, depending on FollowType. */
-		FVector FollowPosition = GetRealFollowLocation();
+		FVector FollowPosition = GetRealFollowPosition(FollowOffset);
 
 		/** Transform from world space to local space. */
 		FVector LocalSpaceFollowPosition = UECameraLibrary::GetLocalSpacePosition(GetOwningActor(), FollowPosition);
@@ -45,35 +45,39 @@ void USimpleFollow::UpdateComponent_Implementation(float DeltaTime)
 	}
 }
 
-FVector USimpleFollow::GetRealFollowLocation()
+FVector USimpleFollow::GetRealFollowPosition(const FVector& Offset)
 {
-	FVector FollowPosition = FVector(0, 0, 0);
-	FVector TempFollowPosition = FollowTarget->GetActorLocation();
-	FRotator TempRotation = FollowTarget->GetActorRotation();
+	FVector Position = FVector();
+	FRotator Rotation = FRotator();
 
-	/** If SocketName is not empty, use the socket's position. */
-	if (SocketName != "")
+	if (IsSocketValid())
 	{
-		UActorComponent* ActorComponent = FollowTarget->GetComponentByClass(USkeletalMeshComponent::StaticClass());
-		if (ActorComponent != nullptr)
+		FTransform SocketTransform = GetSocketTransform();
+		Position = SocketTransform.GetLocation();
+		Rotation = SocketTransform.Rotator();
+	}
+	else
+	{
+		if (FollowTarget != nullptr)
 		{
-			USkeletalMeshComponent* SkeletonComponent = Cast<USkeletalMeshComponent>(ActorComponent);
-			FTransform SocketTransform = SkeletonComponent->GetSocketTransform(FName(SocketName));
-			TempFollowPosition = SocketTransform.GetLocation();
-			TempRotation = SocketTransform.Rotator();
+			Position = GetFollowTarget()->GetActorLocation();
+			Rotation = GetFollowTarget()->GetActorRotation();
+		}
+		else
+		{
+			Position = GetOwningActor()->GetActorLocation();
+			Rotation = GetOwningActor()->GetActorRotation();
 		}
 	}
 
 	if (FollowType == ESimpleFollowType::WorldSpace)
 	{
-		FollowPosition = TempFollowPosition;
+		return Position + Offset;
 	}
-	else if (FollowType == ESimpleFollowType::LocalSpace)
+	else
 	{
-		FollowPosition = TempFollowPosition + UKismetMathLibrary::GreaterGreater_VectorRotator(FollowOffset, TempRotation);
+		return UECameraLibrary::GetPositionWithLocalRotatedOffset(Position, Rotation, Offset);
 	}
-
-	return FollowPosition;
 }
 
 FVector USimpleFollow::DampDeltaPosition(const FVector& TempDeltaPosition, float DeltaTime)
