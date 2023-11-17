@@ -90,7 +90,14 @@ public:
 			return false;
 		}
 
-		return true;
+		USkeletalMeshComponent* SkeletonComponent = Cast<USkeletalMeshComponent>(ActorComponent);
+
+		if (SkeletonComponent->DoesSocketExist(SocketName))
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	virtual FTransform GetSocketTransform()
