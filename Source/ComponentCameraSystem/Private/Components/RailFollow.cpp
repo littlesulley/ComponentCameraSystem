@@ -14,6 +14,7 @@ URailFollow::URailFollow()
 	bLockOrientationToRail = false;
 	FollowType = ERailFollowType::FollowTarget;
 	Damping = 0.5;
+	MaxVelocity = 1000.0;
 	Duration = 0.0;
 	StartPosition = 0.0;
 	Speed = 0.1;
@@ -73,12 +74,15 @@ void URailFollow::UpdateComponent_Implementation(float DeltaTime)
 	{
 		if (FollowTarget != nullptr)
 		{
-			float TragetPosition = GetNormalizedPositionOnRailNearestToTarget(FollowTarget.Get());
-
-			float DeltaPosition = TragetPosition - Rail->CurrentPositionOnRail;
+			float TargetPosition = GetNormalizedPositionOnRailNearestToTarget(FollowTarget.Get());		
+			float DeltaPosition = TargetPosition - Rail->CurrentPositionOnRail;
 			float DampedDeltaPosition;
 			UECameraLibrary::DamperValue(FDampParams(), DeltaTime, DeltaPosition, Damping, DampedDeltaPosition);
 
+			/** Apply post restrictions. */
+			ApplyPostRestrictions(DeltaTime, DampedDeltaPosition);
+
+			/** Update location and rotation. */
 			Rail->CurrentPositionOnRail += DampedDeltaPosition;
 
 			FTransform DesiredTransform = UpdateTransformOnRail();
@@ -193,14 +197,9 @@ float URailFollow::GetNormalizedPositionOnRailNearestToTarget(AActor* Target)
 		FollowPosition = Target->GetActorLocation();
 	}
 
-	float Position = Spline->FindInputKeyClosestToWorldLocation(FollowPosition);
-
-
-	/** Get number of splines. */
-	int SplineNumber = Spline->IsClosedLoop() ? Spline->GetNumberOfSplinePoints() : Spline->GetNumberOfSplinePoints() - 1;
-
-	/** Normalize position into [0,1]. */
-	Position /= SplineNumber;
+	float InputKey = Spline->FindInputKeyClosestToWorldLocation(FollowPosition);
+	float Distance = Spline->GetDistanceAlongSplineAtSplineInputKey(InputKey);
+	float Position = Distance / Spline->GetSplineLength();
 
 	return Position;
 }
@@ -242,6 +241,34 @@ float URailFollow::GetMoveAmount(float Start, float End, bool bIsForward)
 	if (bIsForward) Amount = End >= Start ? End - Start : 1.0f - Start + End;
 	else Amount = End <= Start ? End - Start : 0.0f - Start + End - 1.0f;
 	return Amount;
+}
+
+void URailFollow::ApplyPostRestrictions(const float& DeltaTime, float& DeltaPosition)
+{
+	USplineComponent* Spline = Rail->GetRailSplineComponent();
+	float SplineLength = Spline->GetSplineLength();
+
+	float CurrentPosition = Rail->CurrentPositionOnRail;
+	float CurrentDistance = CurrentPosition * SplineLength;
+	float ExpectedPosition = CurrentPosition + DeltaPosition;
+	float ExpectedDistance = ExpectedPosition * SplineLength;
+
+	float Velocity = (ExpectedDistance - CurrentDistance) / DeltaTime;
+
+	if (FMath::Abs(Velocity) > MaxVelocity)
+	{
+		if (ExpectedPosition > CurrentPosition)
+		{
+			ExpectedDistance = CurrentDistance + DeltaTime * MaxVelocity;
+		}
+		else
+		{
+			ExpectedDistance = CurrentDistance - DeltaTime * MaxVelocity;
+		}
+
+		ExpectedPosition = ExpectedDistance / SplineLength;
+		DeltaPosition = ExpectedPosition - CurrentPosition;
+	}
 }
 
 void URailFollow::ResolveWhenIsBlueprinting(float DeltaTime)

@@ -178,7 +178,7 @@ enum class ERailFollowType : uint8
 UENUM()
 enum class ECraneFollowType : uint8
 {
-	/** Camera will get to the position on crane nearest to the follow target. */
+	/** Camera will get to the position on crane nearest to the follow target. DO NOT use a loop spline for this type. */
 	FollowTarget,
 	/** Camera will move on crane at a fixed speed, starting at some place you specify. */
 	FixedSpeed,

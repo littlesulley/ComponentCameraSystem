@@ -39,8 +39,12 @@ protected:
 	ERailFollowType FollowType;
 
 	/** Follow damping when FollowType is FollowTarget. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "RailFollow", meta = (EditCondition = "FollowType == ERailFollowType::FollowTarget"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "RailFollow", meta = (ClampMin = "0.0", EditCondition = "FollowType == ERailFollowType::FollowTarget"))
 	float Damping;
+
+	/** Max velocity (absolute value) when FollowType is FollowTarget.  */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "RailFollow", meta = (ClampMin = "0.0", EditCondition = "FollowType == ERailFollowType::FollowTarget"))
+	float MaxVelocity;
 
 	/** Start position when FollowType is FixedSpeed. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "RailFollow", meta = (ClampMin = "0.0", ClampMax = "1.0", EditCondition = "FollowType == ERailFollowType::FixedSpeed"))
@@ -116,6 +120,9 @@ public:
 
 	/** Get amount camera should move. */
 	float GetMoveAmount(float Start, float End, bool bIsForward);
+
+	/** Apply a set of restrictions to the delta position on rail, e.g., max velocity. */
+	void ApplyPostRestrictions(const float& DeltaTime, float& DeltaPosition);
 
 	/** Camera moves when bIsBlueprinting is true. */
 	void ResolveWhenIsBlueprinting(float DeltaTime);
