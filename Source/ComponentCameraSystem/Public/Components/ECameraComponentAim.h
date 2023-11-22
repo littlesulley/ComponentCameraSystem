@@ -29,6 +29,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CameraComponentAim")
 	FName SocketName;
 
+	/** Optional scene component.
+	 *	If this is not null, its transform will be used.
+	 *  Less prior than SocketName. If SocketName can be found, it will be used regardless of this component.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CameraComponentAim")
+	USceneComponent* SceneComponent;
+
 public:
 	virtual AActor* SetAimTarget(AActor* NewAimTarget)
 	{
@@ -52,11 +59,26 @@ public:
 		return SocketName;
 	}
 
+	virtual USceneComponent* SetSceneComponent(USceneComponent* NewSceneComponent)
+	{
+		SceneComponent = NewSceneComponent;
+		return SceneComponent;
+	}
+
+	virtual USceneComponent* GetSceneComponent()
+	{
+		return SceneComponent;
+	}
+
 	virtual FVector GetRealAimPosition() 
 	{ 
 		if (IsSocketValid())
 		{
 			return GetSocketTransform().GetLocation();
+		}
+		else if (IsValid(SceneComponent))
+		{
+			return GetSceneComponentTransform().GetLocation();
 		}
 		else
 		{
@@ -69,6 +91,10 @@ public:
 		if (IsSocketValid())
 		{
 			return GetSocketTransform();
+		}
+		else if (IsValid(SceneComponent))
+		{
+			return GetSceneComponentTransform();
 		}
 		else
 		{
@@ -106,5 +132,10 @@ public:
 		USkeletalMeshComponent* SkeletonComponent = Cast<USkeletalMeshComponent>(ActorComponent);
 
 		return SkeletonComponent->GetSocketTransform(SocketName);
+	}
+
+	virtual FTransform GetSceneComponentTransform()
+	{
+		return SceneComponent->GetComponentTransform();
 	}
 };

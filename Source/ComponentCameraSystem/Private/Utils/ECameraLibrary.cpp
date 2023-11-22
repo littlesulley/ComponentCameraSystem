@@ -476,6 +476,74 @@ FVector UECameraLibrary::GetLocalSpacePositionWithVectors(const FVector& PivotPo
 	return LocalSpaceFollowPosition;
 }
 
+AECameraBase* UECameraLibrary::InternalCallCamera(
+								const UObject* WorldContextObject,        // World context object.
+								TSubclassOf<AECameraBase> CameraClass,    // Camera class inherited from AECameraClass.
+								FVector SpawnLocation,                    // Spawn location, default is origin.
+								FRotator SpawnRotation,                   // Spawn rotation, default is identity.
+								AActor* FollowTarget,                     // Follow target, can be null.
+								AActor* AimTarget,                        // Aim target, can be null.
+								FName FollowSocket,                       // Socket name for follow target, can be none.
+								FName AimSocket,                          // Socket name for aim target, can be none.
+								USceneComponent* FollowSceneComponent,    // Scene component for follow target, can be none.
+								USceneComponent* AimSceneComponent,       // Scene component for aim target, can be none.
+								float BlendTime,                          // Blend time from prior camera.
+								enum EViewTargetBlendFunction BlendFunc,  // Blend function.
+								float BlendExp,							  // Blend exponential.
+								bool bLockOutgoing,					  	  // Whether to lock outgoing frame.
+								bool bIsTransitory,						  // Whether it is transitory.
+								float LifeTime,							  // The life time.
+								bool bPreserveState,				      // Whether to preserve camera state.
+								AActor* ParentCamera                      // Parent camera
+					)
+{
+	if (!CameraClass)
+	{
+		return nullptr;
+	}
+	/*
+	AECameraBase* ActiveCamera = GetActiveCamera(WorldContextObject);
+	if (IsValid(ActiveCamera) && ActiveCamera->GetClass() == CameraClass->GetOwnerClass() && !ActiveCamera->bIsTransitory && !bIsTransitory) 
+	{
+		return ActiveCamera;
+	}
+	*/
+	AECameraBase* Camera;
+	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+	if (World != nullptr)
+	{
+		Camera = CastChecked<AECameraBase>(World->SpawnActor(CameraClass));
+	}
+	else
+	{
+		return nullptr;
+	}
+
+	Camera->GetSettingsComponent()->SetFollowTarget(FollowTarget);
+	Camera->GetSettingsComponent()->SetFollowSocket(FollowSocket);
+	Camera->GetSettingsComponent()->SetFollowSceneComponent(FollowSceneComponent);
+	Camera->GetSettingsComponent()->SetAimTarget(AimTarget);
+	Camera->GetSettingsComponent()->SetAimSocket(AimSocket);
+	Camera->GetSettingsComponent()->SetAimSceneComponent(AimSceneComponent);
+
+	/** Set camera location and rotation. */
+	Camera->SetActorLocation(SpawnLocation);
+	Camera->SetActorRotation(SpawnRotation);
+
+	/** Prepared to blend to the new camera. */
+	if (World != nullptr)
+	{
+		/** Initialization. */
+		Camera->ResetOnBecomeViewTarget(bIsTransitory, LifeTime, bPreserveState, ParentCamera);
+
+		/** Blend to new camera. This will automatically call old camera's EndViewTarget and new camera's BecomeViewTarget. */
+		APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0);
+		PC->SetViewTargetWithBlend(Camera, BlendTime, BlendFunc, BlendExp, bLockOutgoing);
+	}
+
+	return Camera;
+}
+
 AECameraBase* UECameraLibrary::CallCamera(const UObject* WorldContextObject,        // World context object.
 										  TSubclassOf<AECameraBase> CameraClass,    // Camera class inherited from AECameraClass.
 								          FVector SpawnLocation,                    // Spawn location, default is origin.
@@ -494,49 +562,67 @@ AECameraBase* UECameraLibrary::CallCamera(const UObject* WorldContextObject,    
 										  AActor* ParentCamera                      // Parent camera
 										)
 {
-	if (!CameraClass)
-	{
-		return nullptr;
-	}
+	return InternalCallCamera(
+		WorldContextObject,
+		CameraClass,
+		SpawnLocation,
+		SpawnRotation,
+		FollowTarget,
+		AimTarget,
+		FollowSocket,
+		AimSocket,
+		nullptr,
+		nullptr,
+		BlendTime,
+		BlendFunc,
+		BlendExp,
+		bLockOutgoing,
+		bIsTransitory,
+		LifeTime,
+		bPreserveState,
+		ParentCamera
+	);
+}
 
-	AECameraBase* ActiveCamera = GetActiveCamera(WorldContextObject);
-	if (IsValid(ActiveCamera) && ActiveCamera->GetClass() == CameraClass->GetOwnerClass() && !ActiveCamera->bIsTransitory && !bIsTransitory) 
-	{
-		return ActiveCamera;
-	}
-
-	AECameraBase* Camera;
-	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
-	if (World != nullptr)
-	{
-		Camera = CastChecked<AECameraBase>(World->SpawnActor(CameraClass));
-	}
-	else
-	{
-		return nullptr;
-	}
-
-	Camera->GetSettingsComponent()->SetFollowTarget(FollowTarget);
-	Camera->GetSettingsComponent()->SetFollowSocket(FollowSocket);
-	Camera->GetSettingsComponent()->SetAimTarget(AimTarget);
-	Camera->GetSettingsComponent()->SetAimSocket(AimSocket);
-
-	/** Set camera location and rotation. */
-	Camera->SetActorLocation(SpawnLocation);
-	Camera->SetActorRotation(SpawnRotation);
-
-	/** Prepared to blend to the new camera. */
-	if (World != nullptr)
-	{
-		/** Initialization. */
-		Camera->ResetOnBecomeViewTarget(bIsTransitory, LifeTime, bPreserveState, ParentCamera);
-
-		/** Blend to new camera. This will automatically call old camera's EndViewTarget and new camera's BecomeViewTarget. */
-		APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0);
-		PC->SetViewTargetWithBlend(Camera, BlendTime, BlendFunc, BlendExp, bLockOutgoing);
-	}
-
-	return Camera;
+AECameraBase* UECameraLibrary::CallCameraWithSceneComponent(
+										  const UObject* WorldContextObject,        // World context object.
+										  TSubclassOf<AECameraBase> CameraClass,    // Camera class inherited from AECameraClass.
+								          FVector SpawnLocation,                    // Spawn location, default is origin.
+										  FRotator SpawnRotation,                   // Spawn rotation, default is identity.
+										  AActor* FollowTarget,                     // Follow target, can be null.
+									      AActor* AimTarget,                        // Aim target, can be null.
+										  USceneComponent* FollowSceneComponent,    // Scene component for follow target, can be none.
+										  USceneComponent* AimSceneComponent,       // Scene component for aim target, can be none.
+										  float BlendTime,                          // Blend time from prior camera.
+										  enum EViewTargetBlendFunction BlendFunc,  // Blend function.
+										  float BlendExp,							// Blend exponential.
+										  bool bLockOutgoing,						// Whether to lock outgoing frame.
+	                                      bool bIsTransitory,						// Whether it is transitory.
+										  float LifeTime,							// The life time.
+										  bool bPreserveState,						// Whether to preserve camera state.
+										  AActor* ParentCamera                      // Parent camera
+										)
+{
+	return InternalCallCamera(
+		WorldContextObject,
+		CameraClass,
+		SpawnLocation,
+		SpawnRotation,
+		FollowTarget,
+		AimTarget,
+		FName("None"),
+		FName("None"),
+		FollowSceneComponent,
+		AimSceneComponent,
+		BlendTime,
+		BlendFunc,
+		BlendExp,
+		bLockOutgoing,
+		bIsTransitory,
+		LifeTime,
+		bPreserveState,
+		ParentCamera
+	);
 }
 
 AECameraBase* UECameraLibrary::CallAnimatedCamera(const UObject* WorldContextObject,            // World context object.

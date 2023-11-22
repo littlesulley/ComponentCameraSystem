@@ -33,6 +33,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CameraComponentFollow")
 	FName SocketName;
 
+	/** Optional scene component.
+	 *	If this is not null, its transform will be used.
+	 *  The same as SocketName, you should be very CAREFUL of its rotation, since the final location is based on the local space.
+	 *  DOES NOT apply to OrbitFollow and CraneFollow.
+	 *  Less prior than SocketName. If SocketName can be found, it will be used regardless of this component.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CameraComponentFollow")
+	USceneComponent* SceneComponent;
+
 public:
 	virtual AActor* SetFollowTarget(AActor* NewFollowTarget)
 	{
@@ -56,6 +65,17 @@ public:
 		return SocketName;
 	}
 
+	virtual USceneComponent* SetSceneComponent(USceneComponent* NewSceneComponent)
+	{
+		SceneComponent = NewSceneComponent;
+		return SceneComponent;
+	}
+
+	virtual USceneComponent* GetSceneComponent()
+	{
+		return SceneComponent;
+	}
+
 	virtual FVector GetRealFollowPosition(const FVector& Offset)
 	{
 		FVector Position = FVector();
@@ -69,7 +89,13 @@ public:
 		}
 		else
 		{
-			if (FollowTarget != nullptr)
+			if (IsValid(SceneComponent))
+			{
+				FTransform ComponentTransform = GetSceneComponentTransform();
+				Position = ComponentTransform.GetLocation();
+				Rotation = ComponentTransform.Rotator();
+			}
+			else if (FollowTarget != nullptr)
 			{
 				Position = GetFollowTarget()->GetActorLocation();
 				Rotation = GetFollowTarget()->GetActorRotation();
@@ -114,5 +140,10 @@ public:
 		USkeletalMeshComponent* SkeletonComponent = Cast<USkeletalMeshComponent>(ActorComponent);
 
 		return SkeletonComponent->GetSocketTransform(SocketName);
+	}
+
+	virtual FTransform GetSceneComponentTransform()
+	{
+		return SceneComponent->GetComponentTransform();
 	}
 };

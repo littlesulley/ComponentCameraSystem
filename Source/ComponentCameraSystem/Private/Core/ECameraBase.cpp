@@ -7,6 +7,8 @@
 #include "Extensions/AnimatedCameraExtension.h"
 #include "Extensions/KeyframeExtension.h"
 #include "Extensions/MixingCameraExtension.h"
+#include "Components/ECameraComponentFollow.h"
+#include "Components/ECameraComponentAim.h"
 #include "Utils/ECameraLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h"
@@ -188,4 +190,74 @@ void AECameraBase::DestroyCamera()
 void AECameraBase::DestroySelf()
 {
 	Destroy();
+}
+
+AECameraBase* AECameraBase::SetFollowAndAimWithBlend(
+				bool bResetFollowTarget,
+				bool bResetFollowSocket,
+				bool bResetFollowSceneComponent,
+				bool bResetAimTarget,
+				bool bResetAimSocket,
+				bool bRsetAimSceneComponent,
+				AActor* FollowTarget,
+				AActor* AimTarget,
+				FName FollowSocket,
+				FName AimSocket,
+				USceneComponent* FollowSceneComponent,
+				USceneComponent* AimSceneComponent,
+				float InBlendTime,
+				enum EViewTargetBlendFunction InBlendFunc,
+				float InBlendExp,
+				bool bInLockOutgoing,
+				bool bInIsTransitory,
+				float InLifeTime,
+				bool bInPreserveState
+			)
+{
+	UClass* CameraClass = nullptr;
+	FVector                   SpawnLocation    = GetActorLocation();
+	FRotator                  SpawnRotation    = GetActorRotation();
+	AActor*                   InFollowTarget   = GetFollowTarget();
+	AActor*                   InAimTarget      = GetAimTarget();
+	FName                     InFollowSocket   = GetFollowComponent() ? GetFollowComponent()->GetFollowSocket()   : FName("None");
+	FName                     InAimSocket      = GetAimComponent()    ? GetAimComponent()->GetAimSocket()         : FName("None");
+	USceneComponent*          InFSC			   = GetFollowComponent() ? GetFollowComponent()->GetSceneComponent() : nullptr;
+	USceneComponent*          InASC			   = GetAimComponent()    ? GetAimComponent()->GetSceneComponent()    : nullptr;
+
+	if (bResetFollowTarget)           InFollowTarget = FollowTarget;
+	if (bResetFollowSocket)           InFollowSocket = FollowSocket;
+	if (bResetFollowSceneComponent)   InFSC          = FollowSceneComponent;
+	if (bResetAimTarget)              InAimTarget    = AimTarget;
+	if (bResetAimSocket)              InAimSocket    = AimSocket;
+	if (bRsetAimSceneComponent)       InASC          = AimSceneComponent;
+
+	if (this->IsA<UBlueprint>()) // @TODO: Is this correct?
+	{
+		CameraClass = Cast<UClass>(Cast<UBlueprint>(this)->GeneratedClass);
+	}
+	else
+	{
+		CameraClass = this->GetClass();
+	}
+
+	return UECameraLibrary::InternalCallCamera(
+		this,
+		CameraClass,
+		SpawnLocation,
+		SpawnRotation,
+		InFollowTarget,
+		InAimTarget,
+		InFollowSocket,
+		InAimSocket,
+		InFSC,
+		InASC,
+		InBlendTime,
+		InBlendFunc,
+		InBlendExp,
+		bInLockOutgoing,
+		bInIsTransitory,
+		InLifeTime,
+		bInPreserveState,
+		ParentCamera
+	);
 }

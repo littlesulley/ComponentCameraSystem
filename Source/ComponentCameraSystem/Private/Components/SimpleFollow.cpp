@@ -58,7 +58,13 @@ FVector USimpleFollow::GetRealFollowPosition(const FVector& Offset)
 	}
 	else
 	{
-		if (FollowTarget != nullptr)
+		if (IsValid(SceneComponent))
+		{
+			FTransform ComponentTransform = GetSceneComponentTransform();
+			Position = ComponentTransform.GetLocation();
+			Rotation = ComponentTransform.Rotator();
+		}
+		else if (FollowTarget != nullptr)
 		{
 			Position = GetFollowTarget()->GetActorLocation();
 			Rotation = GetFollowTarget()->GetActorRotation();

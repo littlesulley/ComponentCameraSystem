@@ -12,11 +12,11 @@
 AELockOnCamera::AELockOnCamera(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	auto ScreenFollowComponent     = NewObject<UFramingFollow>();
-	auto TargetingAimComponent     = NewObject<UTargetingAim>();
-	auto ResolveOcclusionExtension = NewObject<UDeoccluderExtension>();
-	auto ConstrainPitchExtension   = NewObject<UConstrainPitchExtension>();
-	auto ModifyAimPointExtension   = NewObject<UModifyAimPointExtension>();
+	auto ScreenFollowComponent     = CreateDefaultSubobject<UFramingFollow>("ScreenFollowComponent");
+	auto TargetingAimComponent     = CreateDefaultSubobject<UTargetingAim>("TargetingAimComponent");
+	auto ResolveOcclusionExtension = CreateDefaultSubobject<UDeoccluderExtension>("ResolveOcclusionExtension");
+	auto ConstrainPitchExtension   = CreateDefaultSubobject<UConstrainPitchExtension>("ConstrainPitchExtension");
+	auto ModifyAimPointExtension   = CreateDefaultSubobject<UModifyAimPointExtension>("ModifyAimPointExtension");
 
 	CameraSettingsComponent->SetFollowComponent(ScreenFollowComponent);
 	CameraSettingsComponent->SetAimComponent(TargetingAimComponent);

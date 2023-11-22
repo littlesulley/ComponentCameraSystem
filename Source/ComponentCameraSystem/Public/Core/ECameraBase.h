@@ -98,6 +98,49 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "ECamera|CameraBase")
 	AActor* GetAimTarget() { return CameraSettingsComponent != nullptr ? CameraSettingsComponent->AimTarget : nullptr; }
 
+	/** Set current camera's follow target OR aim target with blend. Can optionally feed socket and scene component. 
+	 *  @TODO: Ugly implementation. Should use K2Node in the future.
+	 * @param bResetFollowTarget - Use a new follow target. You should feed in a valid follow target below.
+	 * @param bResetFollowSocket - Use a new follow socket. You should feed in a valid follow socket below.
+	 * @param bResetFollowSceneComponent - Use a new follow scene component. You should feed in a valid follow scene component below.
+	 * @param bResetAimTarget - Use a new aim target. You should feed in a valid aim target below.
+	 * @param bResetAimSocket - Use a new aim socket. You should feed in a valid aim socket below.
+	 * @param bResetAimSceneComponent - Use a new aim scene component. You should feed in a valid aim scene component below.
+	 * @param FollowTarget - The new target actor passed into the follow component. 
+	 * @param AimTarget - The new target actor passed into the aim component. 
+	 * @param FollowSocket - Follow socket name. If specified, will use this socket's transform instead of the follow target's. Should be careful of the socket's rotation.
+	 * @param AimSocket - Aim socket name. If specified, will use this socket's transform instead of the aim target's. Should be careful of the socket's rotation.
+	 * @param FollowSceneComponent - Follow scene component. If specified, will use this component's transform instead of the follow target's. It's your duty to ensure it's valid and paired with FollowTarget.
+	 * @param AimSceneComponent - Follow scene component. If specified, will use this component's transform instead of the aim target's. It's your duty to ensure it's valid and paired with AimTarget.
+	 * @param BlendTime - Blend-in time used for transitioning from the current active camera to the new camera.
+	 * @param BlendFunc - Which type of blend function to use.
+	 * @param BlendExp - Blend exponential.
+	 * @param bLockOutgoing - If true, lock outgoing viewtarget to last frame's camera position for the remainder of the blend.
+	 * @param bIsTransitory - Whether the called camera is transitory. If true, it will be automatically terminated after LifeTime seconds.
+	 * @param LifeTime - The life time of the called camera if it is transitory.
+	 * @param bPreserveState - Whether the incoming camera tries to preserve outgoing camera's location and rotation. If you specified SpawnLocation and SpawnRotation, you should switch this off.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "ECamera|CameraBase", meta = (AdvancedDisplay = 6))
+	AECameraBase* SetFollowAndAimWithBlend(bool bResetFollowTarget, 
+										   bool bResetFollowSocket, 
+										   bool bResetFollowSceneComponent,
+										   bool bResetAimTarget,
+										   bool bResetAimSocket,
+										   bool bRsetAimSceneComponent,
+										   AActor* FollowTarget, 
+										   AActor* AimTarget, 
+										   FName FollowSocket, 
+										   FName AimSocket, 
+										   USceneComponent* FollowSceneComponent, 
+										   USceneComponent* AimSceneComponent,
+										   float InBlendTime, 
+										   enum EViewTargetBlendFunction InBlendFunc,
+										   float InBlendExp,
+										   bool bInLockOutgoing,
+										   bool bInIsTransitory = false,
+										   float InLifeTime = 0.0f,
+										   bool bInPreserveState = false);
+
 	/** Get default blend time. */
 	float GetDefaultBlendTime() { return DefaultBlendTime; }
 
