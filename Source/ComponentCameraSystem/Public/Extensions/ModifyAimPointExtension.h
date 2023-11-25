@@ -13,20 +13,21 @@ class UTargetingAim;
  * This extension can also be used to constrain pitch, but in a different way:
  *     When the follow position is within a given radius of the aim position,
  *	   the aim position will be pushed away from the camera, ensuring camera jitters won't happen.
- *	   This is achieved by interpolating between two types of additional aim offsets, which you can see 
+ *	   This is achieved by interpolating between three types of additional aim offsets, which you can see
  *	   from the read-only property AdditionalAimOffset in the TargetingAim component.
- *     1) The first type is FixedAddition, which tries to keep a fixed angle between the follow position
- *     and the aim position after applied with this kind of additional aim offset.
- *     2) The second type is DynamicAddition, which tries to keep a fixed aim position in screen space,
- *	   because FixedAddition will alter the aim's screen position when entering the given radius.
- *	   
+ *     1) The first type is PitchAddition, which tries to keep a fixed pitch angle between the follow position
+ *     and the aim position after applied with this kind of aim offset.
+ *     2) The second type is CamToAimAddition, which tries to keep a fixed aim position in screen space,
+ *	   by extending the aim position along the direction from camera to the aim target.
+ *	   3) The third type is CamForwardAddition, which extends the aim position along the camera's forward direction.
+ *
  *	   Then, a parameter Strength is used to interpolate these two types of offsets.
- * 
+ *
  *	   This strategy can be particularly useful when your aim target is high above the ground
- *	   and the pitch could be very large. 
- *	
- *	   This extension can be used along with the ConstrainPitch extension.
- * 
+ *	   and the pitch could be very large.
+ *
+ *     This extension can be used along with the ConstrainPitch extension.
+ *
  * NOTE: this extension can ONLY be used in lock-on cameras, i.e., ScreenFollow & TargetingAim.
  */
 UCLASS(Blueprintable, BlueprintType, classGroup = "ECamera")
@@ -42,9 +43,11 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "ModifyAimPoint", meta = (ClampMin = "0.1"))
 	float Radius;
 
-	/** Strength of the dynamic addition. You should tune this value in different situations. */
+	/** Weight for each type of aim offset. X, Y and Z respectively correspond to PitchAddition, CamToAimAddition and CamForwardAddition. 
+	 *  You should make sure the sum of X, Y and Z is equal to or greater than 1.
+	 */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "ModifyAimPoint", meta = (ClampMin = "0.0", ClampMax = "1.0"))
-	float Strength;
+	FVector Weights;
 
 private:
 	UFramingFollow* ScreenFollowComponent;
