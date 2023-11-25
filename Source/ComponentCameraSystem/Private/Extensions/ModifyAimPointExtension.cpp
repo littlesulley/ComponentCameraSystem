@@ -52,14 +52,14 @@ void UModifyAimPointExtension::UpdateComponent_Implementation(float DeltaTime)
 			float TargetLength = CurrentLength;
 			CamToAim.Normalize();
 
-			float A = 1.0;
-			float B = 2.0 * FVector::DotProduct(FollowToCam, CamToAim);
-			float C = FollowToCam.SizeSquared() - Radius * Radius;
+			float A = CamToAim.X * CamToAim.X + CamToAim.Y * CamToAim.Y;
+			float B = 2.0 * (FollowToCam.X * CamToAim.X + FollowToCam.Y * CamToAim.Y);
+			float C = FollowToCam.X * FollowToCam.X + FollowToCam.Y * FollowToCam.Y - Radius * Radius;
 			float Delta = B * B - 4.0 * A * C;
 
 			if (Delta > 0)
 			{
-				TargetLength = (-B + FMath::Sqrt(Delta)) / 2.0;
+				TargetLength = (-B + FMath::Sqrt(Delta)) / (2.0 * A);
 			}
 
 			float Magnitude = TargetLength - CurrentLength;

@@ -42,7 +42,7 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "ModifyAimPoint", meta = (ClampMin = "0.1"))
 	float Radius;
 
-	/** Strength of the dynamic addition, generally, a value between 0.9 and 0.95 performs well. */
+	/** Strength of the dynamic addition. You should tune this value in different situations. */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "ModifyAimPoint", meta = (ClampMin = "0.0", ClampMax = "1.0"))
 	float Strength;
 
