@@ -51,7 +51,7 @@ private:
 	UTargetingAim* TargetingAimComponent;
 
 	bool bInModify;
-	float FixedAngle;
+	float CachedPitch;
 
 public:
 	virtual void UpdateComponent_Implementation(float DeltaTime) override;

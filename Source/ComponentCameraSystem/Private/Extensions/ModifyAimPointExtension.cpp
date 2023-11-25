@@ -8,7 +8,7 @@
 
 UModifyAimPointExtension::UModifyAimPointExtension()
 {
-	Stage = EStage::PreFollow;
+	Stage = EStage::PostFollow;
 
 	Radius = 500.f;
 	Strength = 0.95f;
@@ -32,26 +32,37 @@ void UModifyAimPointExtension::UpdateComponent_Implementation(float DeltaTime)
 			if (!bInModify)
 			{
 				bInModify = true;
-				FixedAngle = UKismetMathLibrary::FindLookAtRotation(ScreenFollowComponent->GetFollowPosition(), TargetingAimComponent->GetOriginalAimPosition()).Pitch;
+				CachedPitch = UKismetMathLibrary::FindLookAtRotation(FollowPosition, AimPosition).Pitch;
 			}
 
-			FVector FollowToAim = TargetingAimComponent->GetOriginalAimPosition() - ScreenFollowComponent->GetFollowPosition();
+			FVector FollowToAim = AimPosition - FollowPosition;
 			FVector Projected = UKismetMathLibrary::ProjectVectorOnToPlane(FollowToAim, FVector(0, 0, 1));
-			FVector Vertical = FVector(0, 0, 1) * Projected.Size() * UKismetMathLibrary::DegTan(FixedAngle);
+			FVector Vertical = FVector(0, 0, 1) * Projected.Size() * UKismetMathLibrary::DegTan(CachedPitch);
 			FVector FixedDirection = Projected + Vertical;
 
 			FixedDirection.Normalize();
-			FixedDirection *= Radius / UKismetMathLibrary::DegCos(FixedAngle);
+			FixedDirection *= Radius / UKismetMathLibrary::DegCos(CachedPitch);
 			FVector AdditionOfFixed = FixedDirection - FollowToAim;
 
 			// Begin dynamic addition: trying to keep the aim position at a static screen space position
-			FVector CamToAim = TargetingAimComponent->GetRealAimPosition() - GetOwningActor()->GetActorLocation();
+			FVector FollowToCam = -(FollowPosition - GetOwningActor()->GetActorLocation());
+			FVector CamToAim = AimPosition - GetOwningActor()->GetActorLocation();
+
+			float CurrentLength = CamToAim.Size();
+			float TargetLength = CurrentLength;
 			CamToAim.Normalize();
 
-			Projected = UKismetMathLibrary::ProjectVectorOnToPlane(CamToAim, FVector(0, 0, 1));
-			Projected.Normalize();
-			float Magnitude = (Radius - PlanarDistance) / ((Projected | CamToAim) + 0.0001);
+			float A = 1.0;
+			float B = 2.0 * FVector::DotProduct(FollowToCam, CamToAim);
+			float C = FollowToCam.SizeSquared() - Radius * Radius;
+			float Delta = B * B - 4.0 * A * C;
 
+			if (Delta > 0)
+			{
+				TargetLength = (-B + FMath::Sqrt(Delta)) / 2.0;
+			}
+
+			float Magnitude = TargetLength - CurrentLength;
 			FVector AdditionOfDynamic = CamToAim * Magnitude;
 
 			// Blend between the two types of additions
