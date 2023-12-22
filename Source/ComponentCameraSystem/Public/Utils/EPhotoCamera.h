@@ -10,9 +10,11 @@
 class UCameraComponent;
 class AECameraBase;
 class AEPlayerCameraManager;
+class UUserWidget;
 
 /** This class is camera activated in the photo mode. 
- *  An AEPlayerCameraManager manager is mandatory.
+ *  An AEPlayerCameraManager manager is mandatory.'
+ *  When enabling this camera, make sure current active camera has a valid follow target.
  */
 UCLASS(NotBlueprintable, BlueprintType, classGroup = "ECamera")
 class COMPONENTCAMERASYSTEM_API AEPhotoCamera : public APawn
@@ -22,37 +24,13 @@ class COMPONENTCAMERASYSTEM_API AEPhotoCamera : public APawn
 public:
 	AEPhotoCamera();
 
-	UPROPERTY(EditAnywhere, Category = "EPhotoMode|Common", meta = (ClampMin = "10.0", ClampMax = "150.0"))
-	float FOV;
-
-	UPROPERTY(EditAnywhere, Category = "EPhotoMode|Common", meta = (ClampMin = "-180.0", ClampMax = "180.0"))
-	float Roll;
-
-	UPROPERTY(EditAnywhere, Category = "EPhotoMode|DOF", meta = (ClampMin = "0.0", ClampMax = "500.0"))
-	float FocusDistance;
-
-	UPROPERTY(EditAnywhere, Category = "EPhotoMode|DOF", meta = (ClampMin = "0.0", ClampMax = "2.0"))
-	float Aperture;
-
-	UPROPERTY(EditAnywhere, Category = "EPhotoMode|DOF", meta = (ClampMin = "0.0", ClampMax = "2.0"))
-	float SensorWidth;
-
-	UPROPERTY(EditAnywhere, Category = "EPhotoMode|Light", meta = (ClampMin = "0.0", ClampMax = "2.0"))
-	float Brightness;
-
-	UPROPERTY(EditAnywhere, Category = "EPhotoMode|Light", meta = (ClampMin = "0.0", ClampMax = "2.0"))
-	float Temperature;
-
-	UPROPERTY(EditAnywhere, Category = "EPhotoMode|Color", meta = (ClampMin = "0.0", ClampMax = "2.0"))
-	float Intensity;
-
-protected:
-	UPROPERTY(EditAnywhere, Category = "EPhotoMode")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "EPhotoMode")
 	UCameraComponent* CameraComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "EPhotoMode")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "EPhotoMode")
 	class AEPlayerCameraManager* PlayerCameraManager;
 
+protected:
 	UPROPERTY(VisibleAnywhere, Category = "EPhotoMode")
 	class UInputAction* PhotoModeAction;
 
@@ -61,6 +39,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "EPhotoMode")
 	class UInputAction* PhotoModeRotateAction;
+
+	UPROPERTY(VisibleAnywhere, Category = "EPhotoMode")
+	class UInputAction* PhotoModeShotAction;
 
 	UPROPERTY(VisibleAnywhere, Category = "EPhotoMode")
 	float MoveSpeedMultiplier = 4.0f;
@@ -72,6 +53,7 @@ private:
 	AActor* PivotActor;
 	APawn* ControlledPawn;
 	AECameraBase* ActiveCamera;
+	UUserWidget* PhotoModeUI;
 
 protected:
 	virtual void BeginPlay() override;
@@ -85,6 +67,16 @@ protected:
 	/** Called for PhotoModeRotateAction. */
 	void PhotoModeRotate(const FInputActionValue& Value);
 
+	/** Called for PhotoModeShotAction. */
+	void PhotoModeShot(const FInputActionValue& Value);
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "EPhotoMode")
+	void PhotoModeTakeShot();
+
+	UFUNCTION(BlueprintCallable, Category = "EPhotoMode")
+	void PhotoModeQuit();
+
 public:	
 	virtual void BecomeViewTarget(class APlayerController* PC) override;
 	virtual void Tick(float DeltaTime) override;
@@ -92,12 +84,8 @@ public:
 
 	AActor* GetPivotActor() { return PivotActor; }
 
+	void SetPhotoModeUI(UUserWidget* InPhotoModeUI) { PhotoModeUI = InPhotoModeUI; }
+
 private:
 	void Intialize();
-
-	UFUNCTION()
-	void DelayPossess();
-
-	UFUNCTION()
-	void DelaySetViewTarget();
 };

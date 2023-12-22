@@ -6,6 +6,7 @@
 #include "Core/ECameraManager.h"
 #include "Core/ECameraBase.h"
 #include "Utils/ECameraLibrary.h"
+#include "Utils/ECameraTypes.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "EnhancedInputComponent.h"
@@ -13,11 +14,19 @@
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
+#include "TimerManager.h"
+#include "UnrealClient.h"
+#include "Slate/SceneViewport.h"
+#include "HighResScreenshot.h"
+#include "Misc/Paths.h"
+#include "Misc/DateTime.h"
+#include "Blueprint/UserWidget.h"
 
 AEPhotoCamera::AEPhotoCamera()
 {
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootSceneComponent"));
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
+
 	CameraComponent->SetupAttachment(RootComponent);
 }
 
@@ -49,7 +58,7 @@ void AEPhotoCamera::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) 
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		// Switch
 		EnhancedInputComponent->BindAction(PhotoModeAction, ETriggerEvent::Completed, this, &AEPhotoCamera::PhotoModeSwitch);
@@ -59,6 +68,9 @@ void AEPhotoCamera::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 		// Rotate
 		EnhancedInputComponent->BindAction(PhotoModeRotateAction, ETriggerEvent::Triggered, this, &AEPhotoCamera::PhotoModeRotate);
+
+		// Shot
+		EnhancedInputComponent->BindAction(PhotoModeShotAction, ETriggerEvent::Completed, this, &AEPhotoCamera::PhotoModeShot);
 	}
 }
 
@@ -74,6 +86,7 @@ void AEPhotoCamera::Intialize()
 		PhotoModeAction = PlayerCameraManager->GetPhotoModeAction();
 		PhotoModeMoveAction = PlayerCameraManager->GetPhotoModeMoveAction();
 		PhotoModeRotateAction = PlayerCameraManager->GetPhotoModeRotateAction();
+		PhotoModeShotAction = PlayerCameraManager->GetPhotoModeShotAction();
 
 		/** Photo mode parameters. */
 		MoveSpeedMultiplier = PlayerCameraManager->GetMoveSpeedMultiplier();
@@ -85,22 +98,36 @@ void AEPhotoCamera::PhotoModeSwitch(const FInputActionValue& Value)
 {
 	if (IsValid(ControlledPawn))
 	{
+		FTimerManager* TimerManager = &GetWorld()->GetTimerManager();
+
 		AActor* ManagerActor = UGameplayStatics::GetActorOfClass(this, AECameraManager::StaticClass());
 
 		if (IsValid(ManagerActor))
-		{			
+		{
 			PlayerCameraManager->EasyStartCameraFade(0.0f, 1.0f, 0.5f, EEasingFunc::Linear, 0.2f, 0.5f, EEasingFunc::Linear, FLinearColor::Black);
 
 			ActiveCamera = Cast<AECameraManager>(ManagerActor)->GetActiveCamera();
 
-			FTimerDynamicDelegate ViewTargetDelegate;
-			ViewTargetDelegate.BindUFunction(this, FName("DelaySetViewTarget"));
-			UKismetSystemLibrary::K2_SetTimerDelegate(ViewTargetDelegate, 0.5f, false);
+			FTimerHandle TimeHandle;
+			TimerManager->SetTimer(
+				TimeHandle,
+				[this]() {
+					Cast<APlayerController>(GetController())->SetViewTargetWithBlend(ActiveCamera, 0.0f);
+				},
+				0.5f,
+				false
+			);
 		}
 
-		FTimerDynamicDelegate PossessDelegate;
-		PossessDelegate.BindUFunction(this, FName("DelayPossess"));
-		UKismetSystemLibrary::K2_SetTimerDelegate(PossessDelegate, 0.7f, false);
+		FTimerHandle TimeHandle;
+		TimerManager->SetTimer(
+			TimeHandle,
+			[this]() {
+				Cast<APlayerController>(GetController())->Possess(ControlledPawn);
+			},
+			0.7f,
+			false
+		);
 
 		PlayerCameraManager->UnpauseGame();
 	}
@@ -135,12 +162,34 @@ void AEPhotoCamera::PhotoModeRotate(const FInputActionValue& Value)
 	AddActorLocalRotation(FRotator(-RotationVector.Y, 0.0f, 0.0f));
 }
 
-void AEPhotoCamera::DelayPossess()
+void AEPhotoCamera::PhotoModeShot(const FInputActionValue& Value)
 {
-	Cast<APlayerController>(GetController())->Possess(ControlledPawn);
+	/** Using reflection to get resolution in widget. */
+	UClass* ObjectClass = PhotoModeUI->GetClass();
+
+	FProperty* PropertyW = FindFProperty<FProperty>(ObjectClass, FName("ResolutionWidth"));
+	FProperty* PropertyH = FindFProperty<FProperty>(ObjectClass, FName("ResolutionHeight"));
+	FIntProperty* IntPropertyW = CastField<FIntProperty>(PropertyW);
+	FIntProperty* IntPropertyH = CastField<FIntProperty>(PropertyH);
+	int Width = IntPropertyW->GetPropertyValue_InContainer(PhotoModeUI);
+	int Height = IntPropertyH->GetPropertyValue_InContainer(PhotoModeUI);
+
+	TArray<FStringFormatArg> Args;
+	Args.Add(FStringFormatArg(Width));
+	Args.Add(FStringFormatArg(Height));
+	Args.Add(FStringFormatArg(FPaths::ProjectSavedDir()));
+	Args.Add(FStringFormatArg(FDateTime::Now().ToString()));
+
+	FString Command = FString::Format(TEXT("HighResShot {0}x{1} filename=\"{2}/HighResSnapshots/{3}.png\""), Args);
+	Cast<APlayerController>(GetController())->ConsoleCommand(Command, true);
 }
 
-void AEPhotoCamera::DelaySetViewTarget()
+void AEPhotoCamera::PhotoModeTakeShot()
 {
-	Cast<APlayerController>(GetController())->SetViewTargetWithBlend(ActiveCamera, 0.0f);
+	PhotoModeShot(FInputActionValue());
+}
+
+void AEPhotoCamera::PhotoModeQuit()
+{
+	PhotoModeSwitch(FInputActionValue());
 }

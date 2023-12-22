@@ -258,6 +258,7 @@ AECameraBase* AECameraBase::SetFollowAndAimWithBlend(
 		bInIsTransitory,
 		InLifeTime,
 		bInPreserveState,
+		false,
 		ParentCamera
 	);
 }

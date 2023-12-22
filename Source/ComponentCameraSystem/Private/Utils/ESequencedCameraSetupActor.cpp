@@ -92,6 +92,7 @@ void AESequencedCameraSetupActor::UpdateCamera()
 		true,
 		99999.f,
 		CameraSequence[CameraIndex].bPreserveState,
+		true,
 		this
 	);
 

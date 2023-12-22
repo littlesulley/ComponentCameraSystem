@@ -79,17 +79,25 @@ protected:
 
 //  <- Photo mode camera. -> //
 
-	/** Input action for switching on/off photo mode.  */
+	/** Photo mode UI. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "EPlayerCameraManager|PhotoMode")
+	TSubclassOf<class UUserWidget> PhotoModeUIClass;
+
+	/** Input action for switching on/off photo mode. Make sure this action is added to current input mapping context. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "EPlayerCameraManager|PhotoMode")
 	class UInputAction* PhotoModeAction;
 
-	/** Input action controlling movement of photo mode camera. */
+	/** Input action controlling movement of photo mode camera. Make sure this action is added to current input mapping context. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "EPlayerCameraManager|PhotoMode")
 	class UInputAction* PhotoModeMoveAction;
 
-	/** Input action controlling rotation of photo mode camera. */
+	/** Input action controlling rotation of photo mode camera. Make sure this action is added to current input mapping context. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "EPlayerCameraManager|PhotoMode")
 	class UInputAction* PhotoModeRotateAction;
+
+	/** Input action for taking a screenshot. Make sure this action is added to current input mapping context. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "EPlayerCameraManager|PhotoMode")
+	class UInputAction* PhotoModeShotAction;
 
 	/** Camera move speed multiplier, controls how fast photo camera moves. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "EPlayerCameraManager|PhotoMode", meta = (ClampMin = "0.1", ClampMax = "5.0"))
@@ -103,6 +111,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "EPlayerCameraManager|PhotoMode")
 	TArray<TSubclassOf<AActor>> UnpausableObjects;
 
+	class UUserWidget* PhotoModeUI = nullptr;
 	class AEPhotoCamera* PhotoCamera = nullptr;
 	AActor* PivotActor = nullptr;
 	APawn* ControlledPawn = nullptr;
@@ -340,6 +349,8 @@ public:
 	UInputAction* GetPhotoModeAction() { return PhotoModeAction; }
 	UInputAction* GetPhotoModeMoveAction() { return PhotoModeMoveAction; }
 	UInputAction* GetPhotoModeRotateAction() { return PhotoModeRotateAction; }
+	UInputAction* GetPhotoModeShotAction() { return PhotoModeShotAction; }
+	UUserWidget* GetPhotoModeUI() { return PhotoModeUI; }
 	float GetMoveSpeedMultiplier() { return MoveSpeedMultiplier; }
 	float GetPhotoModeMaxRaiuds() { return PhotoModeMaxRadius; }
 	AActor* GetPhotoModePivotActor() { return PivotActor; }

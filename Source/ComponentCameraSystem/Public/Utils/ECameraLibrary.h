@@ -377,7 +377,7 @@ public:
 
 	/** Call a new camera. Internal use only. */
 	UFUNCTION(BlueprintCallable, Category = "ECamera|Utils", meta = (BlueprintInternalUseOnly, WorldContext = "WorldContextObject", DeterminesOutputType = "CameraClass"))
-	static AECameraBase* InternalCallCamera(const UObject* WorldContextObject, TSubclassOf<AECameraBase> CameraClass, FVector SpawnLocation, FRotator SpawnRotation, AActor* FollowTarget, AActor* AimTarget, FName FollowSocket, FName AimSocket, USceneComponent* FollowSceneComponent, USceneComponent* AimSceneComponent, float BlendTime, enum EViewTargetBlendFunction BlendFunc, float BlendExp, bool bLockOutgoing, bool bIsTransitory = false, float LifeTime = 0.0f, bool bPreserveState = false, AActor* ParentCamera = nullptr);
+	static AECameraBase* InternalCallCamera(const UObject* WorldContextObject, TSubclassOf<AECameraBase> CameraClass, FVector SpawnLocation, FRotator SpawnRotation, AActor* FollowTarget, AActor* AimTarget, FName FollowSocket, FName AimSocket, USceneComponent* FollowSceneComponent, USceneComponent* AimSceneComponent, float BlendTime, enum EViewTargetBlendFunction BlendFunc, float BlendExp, bool bLockOutgoing, bool bIsTransitory = false, float LifeTime = 0.0f, bool bPreserveState = false, bool bCheckClass = true, AActor* ParentCamera = nullptr);
 
 	/** Call a TSubclassOf<ECameraBase> class type camera actor. 
 	 *  Highly recommending using this node rather than UE's vanilla SetViewTargetWithBlend node.
@@ -396,9 +396,10 @@ public:
 	 * @param bIsTransitory - Whether the called camera is transitory. If true, it will be automatically terminated after LifeTime seconds.
 	 * @param LifeTime - The life time of the called camera if it is transitory.
 	 * @param bPreserveState - Whether the incoming camera tries to preserve outgoing camera's location and rotation. If you specified SpawnLocation and SpawnRotation, you should switch this off.
+	 * @param CheckClass - When enabled, return the current active one if the input CameraClass is the same as the current active camera. When disabled, always create a new camera.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "ECamera|Utils", meta = (DisplayName = "CallCamera", WorldContext = "WorldContextObject", DeterminesOutputType = "CameraClass", AdvancedDisplay = 6, HidePin = "ParentCamera"))
-	static AECameraBase* CallCamera(const UObject* WorldContextObject, TSubclassOf<AECameraBase> CameraClass, FVector SpawnLocation, FRotator SpawnRotation, AActor* FollowTarget, AActor* AimTarget, FName FollowSocket, FName AimSocket, float BlendTime, enum EViewTargetBlendFunction BlendFunc, float BlendExp, bool bLockOutgoing, bool bIsTransitory = false, float LifeTime = 0.0f, bool bPreserveState = false, AActor* ParentCamera = nullptr);
+	static AECameraBase* CallCamera(const UObject* WorldContextObject, TSubclassOf<AECameraBase> CameraClass, FVector SpawnLocation, FRotator SpawnRotation, AActor* FollowTarget, AActor* AimTarget, FName FollowSocket, FName AimSocket, float BlendTime, enum EViewTargetBlendFunction BlendFunc, float BlendExp, bool bLockOutgoing, bool bIsTransitory = false, float LifeTime = 0.0f, bool bPreserveState = false, bool bCheckClass = true, AActor* ParentCamera = nullptr);
 
 	/** Call a TSubclassOf<ECameraBase> class type camera actor. 
 	 *  Highly recommending using this node rather than UE's vanilla SetViewTargetWithBlend node.
@@ -417,9 +418,10 @@ public:
 	 * @param bIsTransitory - Whether the called camera is transitory. If true, it will be automatically terminated after LifeTime seconds.
 	 * @param LifeTime - The life time of the called camera if it is transitory.
 	 * @param bPreserveState - Whether the incoming camera tries to preserve outgoing camera's location and rotation. If you specified SpawnLocation and SpawnRotation, you should switch this off.
+	 * @param CheckClass - When enabled, return the current active one if the input CameraClass is the same as the current active camera. When disabled, always create a new camera.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "ECamera|Utils", meta = (DisplayName = "CallCameraWithSceneComponent", WorldContext = "WorldContextObject", DeterminesOutputType = "CameraClass", AdvancedDisplay = 6, HidePin = "ParentCamera"))
-	static AECameraBase* CallCameraWithSceneComponent(const UObject* WorldContextObject, TSubclassOf<AECameraBase> CameraClass, FVector SpawnLocation, FRotator SpawnRotation, AActor* FollowTarget, AActor* AimTarget, USceneComponent* FollowSceneComponent, USceneComponent* AimSceneComponent, float BlendTime, enum EViewTargetBlendFunction BlendFunc, float BlendExp, bool bLockOutgoing, bool bIsTransitory = false, float LifeTime = 0.0f, bool bPreserveState = false, AActor* ParentCamera = nullptr);
+	static AECameraBase* CallCameraWithSceneComponent(const UObject* WorldContextObject, TSubclassOf<AECameraBase> CameraClass, FVector SpawnLocation, FRotator SpawnRotation, AActor* FollowTarget, AActor* AimTarget, USceneComponent* FollowSceneComponent, USceneComponent* AimSceneComponent, float BlendTime, enum EViewTargetBlendFunction BlendFunc, float BlendExp, bool bLockOutgoing, bool bIsTransitory = false, float LifeTime = 0.0f, bool bPreserveState = false, bool bCheckClass = true, AActor* ParentCamera = nullptr);
 
 	/** Call an animated camera, i.e., driven by an animation sequence. This is usually used inside a skill.
 	 * @param AnimToPlay - The animation sequence you want to play on camera.

@@ -21,6 +21,8 @@
 #include "UObject/ScriptInterface.h"
 #include "Engine/BlendableInterface.h"
 #include "Components/MeshComponent.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
+#include "Blueprint/UserWidget.h"
 
 AEPlayerCameraManager::AEPlayerCameraManager(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -938,6 +940,12 @@ float AEPlayerCameraManager::GetBlendedWeight(const float& StartWeight, const fl
 
 void AEPlayerCameraManager::SwitchPhotoMode()
 {
+	if (PhotoModeUIClass == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("UI Class is null. You must specify a valid UI class for photo mode. The provided UW_PhotoMode is highly recommended."));
+		return;
+	}
+
 	if (!IsValid(PhotoCamera))
 	{
 		AActor* PhotoCameraActor = UGameplayStatics::GetActorOfClass(this, AEPhotoCamera::StaticClass());
@@ -968,6 +976,12 @@ void AEPlayerCameraManager::SwitchPhotoMode()
 
 void AEPlayerCameraManager::PauseGame()
 {
+	/** Create and setup ui widget. */
+	PhotoModeUI = CreateWidget(GetOwningPlayerController(), PhotoModeUIClass);
+	PhotoModeUI->AddToViewport();
+	PhotoModeUI->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	PhotoCamera->SetPhotoModeUI(PhotoModeUI);
+
 	bOriginalEnableDither = bEnableDither;
 	bEnableDither = false;
 
@@ -994,6 +1008,10 @@ void AEPlayerCameraManager::PauseGame()
 
 void AEPlayerCameraManager::UnpauseGame()
 {
+	/** Destroy ui widget.*/
+	PhotoModeUI->RemoveFromParent();
+	PhotoModeUI = nullptr;
+
 	bEnableDither = bOriginalEnableDither;
 
 	/** Set unpausable objects. */

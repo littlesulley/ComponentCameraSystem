@@ -28,6 +28,8 @@ class UTargetingAim;
  *
  *     This extension can be used along with the ConstrainPitch extension.
  *
+ *	   Blog post: https://sulley.cc/2023/10/24/22/31/
+ * 
  * NOTE: this extension can ONLY be used in lock-on cameras, i.e., ScreenFollow & TargetingAim.
  */
 UCLASS(Blueprintable, BlueprintType, classGroup = "ECamera")

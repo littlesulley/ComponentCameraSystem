@@ -35,6 +35,7 @@ public class ComponentCameraSystem : ModuleRules
 			{
 				"CoreUObject",
 				"Engine",
+				"UMG",
 				"Slate",
 				"SlateCore",
                 "InputCore",

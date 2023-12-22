@@ -241,6 +241,26 @@ enum class EMixingCameraMixScheme : uint8
 	Both
 };
 
+/** Strategies to apply camera rolling. */
+UENUM()
+enum class ERollScheme : uint8
+{
+	/** Constant speed */
+	Constant,
+	/** Proportional to follow target's velocity. */
+	ProportionalToVelocity
+};
+
+UENUM()
+enum class EPhotoModeResolution : uint8
+{
+	HD			UMETA(DisplayName = "720p"),
+	FHD			UMETA(DisplayName = "1080p"),
+	QHD			UMETA(DisplayName = "1440p (2K)"),
+	UHD			UMETA(DisplayName = "2160p (4K)"),
+	Cinematic   UMETA(DisplayName = "Cinematic")
+};
+
 /**************************************************************************************/
 /********************************* Begin structs.**************************************/
 /**************************************************************************************/

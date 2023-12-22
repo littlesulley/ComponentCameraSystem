@@ -494,6 +494,7 @@ AECameraBase* UECameraLibrary::InternalCallCamera(
 								bool bIsTransitory,						  // Whether it is transitory.
 								float LifeTime,							  // The life time.
 								bool bPreserveState,				      // Whether to preserve camera state.
+								bool bCheckClass,                         // Whether to check input camera class.
 								AActor* ParentCamera                      // Parent camera
 					)
 {
@@ -501,13 +502,16 @@ AECameraBase* UECameraLibrary::InternalCallCamera(
 	{
 		return nullptr;
 	}
-	/*
-	AECameraBase* ActiveCamera = GetActiveCamera(WorldContextObject);
-	if (IsValid(ActiveCamera) && ActiveCamera->GetClass() == CameraClass->GetOwnerClass() && !ActiveCamera->bIsTransitory && !bIsTransitory) 
+	
+	if (bCheckClass)
 	{
-		return ActiveCamera;
+		AECameraBase* ActiveCamera = GetActiveCamera(WorldContextObject);
+		if (IsValid(ActiveCamera) && ActiveCamera->GetClass() == CameraClass->GetOwnerClass() && !ActiveCamera->bIsTransitory && !bIsTransitory)
+		{
+			return ActiveCamera;
+		}
 	}
-	*/
+	
 	AECameraBase* Camera;
 	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
 	if (World != nullptr)
@@ -559,6 +563,7 @@ AECameraBase* UECameraLibrary::CallCamera(const UObject* WorldContextObject,    
 	                                      bool bIsTransitory,						// Whether it is transitory.
 										  float LifeTime,							// The life time.
 										  bool bPreserveState,						// Whether to preserve camera state.
+										  bool bCheckClass,                         // Whether to check input camera class.
 										  AActor* ParentCamera                      // Parent camera
 										)
 {
@@ -580,6 +585,7 @@ AECameraBase* UECameraLibrary::CallCamera(const UObject* WorldContextObject,    
 		bIsTransitory,
 		LifeTime,
 		bPreserveState,
+		bCheckClass,
 		ParentCamera
 	);
 }
@@ -600,6 +606,7 @@ AECameraBase* UECameraLibrary::CallCameraWithSceneComponent(
 	                                      bool bIsTransitory,						// Whether it is transitory.
 										  float LifeTime,							// The life time.
 										  bool bPreserveState,						// Whether to preserve camera state.
+										  bool bCheckClass,                         // Whether to check input camera class.
 										  AActor* ParentCamera                      // Parent camera
 										)
 {
@@ -621,6 +628,7 @@ AECameraBase* UECameraLibrary::CallCameraWithSceneComponent(
 		bIsTransitory,
 		LifeTime,
 		bPreserveState,
+		bCheckClass,
 		ParentCamera
 	);
 }
