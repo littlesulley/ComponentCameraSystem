@@ -376,7 +376,7 @@ public:
 	static FVector GetLocalSpacePositionWithVectors(const FVector& PivotPosition, const FVector& ForwardVector, const FVector& RightVector, const FVector& UpVector, const FVector& InputPosition);
 
 	/** Call a new camera. Internal use only. */
-	UFUNCTION(BlueprintCallable, Category = "ECamera|Utils", meta = (BlueprintInternalUseOnly, WorldContext = "WorldContextObject", DeterminesOutputType = "CameraClass"))
+	UFUNCTION(BlueprintCallable, Category = "ECamera|Utils", meta = (BlueprintInternalUseOnly = "True", WorldContext = "WorldContextObject", DeterminesOutputType = "CameraClass"))
 	static AECameraBase* InternalCallCamera(const UObject* WorldContextObject, TSubclassOf<AECameraBase> CameraClass, FVector SpawnLocation, FRotator SpawnRotation, AActor* FollowTarget, AActor* AimTarget, FName FollowSocket, FName AimSocket, USceneComponent* FollowSceneComponent, USceneComponent* AimSceneComponent, float BlendTime, enum EViewTargetBlendFunction BlendFunc, float BlendExp, bool bLockOutgoing, bool bIsTransitory = false, float LifeTime = 0.0f, bool bPreserveState = false, bool bCheckClass = true, AActor* ParentCamera = nullptr);
 
 	/** Call a TSubclassOf<ECameraBase> class type camera actor. 
