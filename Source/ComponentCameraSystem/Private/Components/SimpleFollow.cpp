@@ -13,7 +13,6 @@ USimpleFollow::USimpleFollow()
 {
 	Stage = EStage::Follow;
 	FollowType = ESimpleFollowType::WorldSpace;
-	FollowOffset = FVector(0.0f, 0.0f, 0.0f);
 	AxisMasks = FVector(1.0f, 1.0f, 1.0f);
 	DampParams = FDampParams();
 }
@@ -23,7 +22,7 @@ void USimpleFollow::UpdateComponent_Implementation(float DeltaTime)
 	if (FollowTarget != nullptr)
 	{
 		/** Get the *real* follow position, depending on FollowType. */
-		FVector FollowPosition = GetRealFollowPosition(FollowOffset);
+		FVector FollowPosition = GetRealFollowPosition(true);
 
 		/** Transform from world space to local space. */
 		FVector LocalSpaceFollowPosition = UECameraLibrary::GetLocalSpacePosition(GetOwningActor(), FollowPosition);
@@ -45,7 +44,7 @@ void USimpleFollow::UpdateComponent_Implementation(float DeltaTime)
 	}
 }
 
-FVector USimpleFollow::GetRealFollowPosition(const FVector& Offset)
+FVector USimpleFollow::GetRealFollowPosition(bool bWithOffset)
 {
 	FVector Position = FVector();
 	FRotator Rotation = FRotator();
@@ -78,11 +77,25 @@ FVector USimpleFollow::GetRealFollowPosition(const FVector& Offset)
 
 	if (FollowType == ESimpleFollowType::WorldSpace)
 	{
-		return Position + Offset;
+		if (bWithOffset)
+		{
+			return Position + FollowOffset;
+		}
+		else
+		{
+			return Position;
+		}
 	}
 	else
 	{
-		return UECameraLibrary::GetPositionWithLocalRotatedOffset(Position, Rotation, Offset);
+		if (bWithOffset)
+		{
+			return UECameraLibrary::GetPositionWithLocalRotatedOffset(Position, Rotation, FollowOffset);
+		}
+		else
+		{
+			return Position;
+		}
 	}
 }
 

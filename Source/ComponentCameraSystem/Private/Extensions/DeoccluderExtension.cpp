@@ -3,6 +3,8 @@
 #include "Extensions/DeoccluderExtension.h"
 #include "Utils/ECameraLibrary.h"
 #include "Utils/ECameraTypes.h"
+#include "Components/ECameraComponentAim.h"
+#include "Components/ECameraComponentFollow.h"
 #include "CollisionQueryParams.h"
 #include "WorldCollision.h"
 #include "Engine/World.h"
@@ -33,26 +35,29 @@ void UDeoccluderExtension::UpdateComponent_Implementation(float DeltaTime)
 	/** Cache camera location at the very beginning. */
 	CachedRawLocation = GetOwningActor()->GetActorLocation();
 
-	/** Get the target to which we want to emit ray trace. */
-	AActor* Target;
-	if (GetOwningSettingComponent()->GetAimTarget() != nullptr)
+	/** Get the target location to which we want to emit ray trace. */
+	FVector TargetLocation;
+
+	if (GetOwningSettingComponent()->GetAimComponent() != nullptr 
+		&& GetOwningSettingComponent()->GetAimTarget() != nullptr)
 	{
-		Target = GetOwningSettingComponent()->GetAimTarget();
+		TargetLocation = GetOwningSettingComponent()->GetAimComponent()->GetRealAimPosition(true);
 	}
-	else if (GetOwningSettingComponent()->GetFollowTarget() != nullptr)
+	else if (GetOwningSettingComponent()->GetFollowComponent() != nullptr 
+		     && GetOwningSettingComponent()->GetFollowTarget() != nullptr)
 	{
-		Target = GetOwningSettingComponent()->GetFollowTarget();
+		TargetLocation = GetOwningSettingComponent()->GetFollowComponent()->GetRealFollowPosition(true);
 	}
 	else return;
 
 	/** Get ray start and end location. */
-	FVector Direction = GetOwningActor()->GetActorLocation() - Target->GetActorLocation(); 
+	FVector Direction = GetOwningActor()->GetActorLocation() - TargetLocation;
 	Direction.Normalize();
-	FVector Start = Target->GetActorLocation() + MinimumDistanceFromTarget * Direction;
+	FVector Start = TargetLocation + MinimumDistanceFromTarget * Direction;
 	FVector End = GetOwningActor()->GetActorLocation();
 
 	/** Do nothing if distance between camera and target is less than the required minimum distance.  */
-	if (FVector::Distance(GetOwningActor()->GetActorLocation(), Target->GetActorLocation()) <= MinimumDistanceFromTarget)
+	if (FVector::Distance(GetOwningActor()->GetActorLocation(), TargetLocation) <= MinimumDistanceFromTarget)
 	{
 		ResetVariablesAndRestoreDamping(DeltaTime, DeltaDistanceFromCamera, RestoreDamping, Direction);
 		return;

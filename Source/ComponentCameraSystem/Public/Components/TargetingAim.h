@@ -22,10 +22,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TargetingAim")
 	bool bLocalRotation;
 
-	/** User-specified world space position offset applied to the aim target. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TargetingAim")
-	FVector AimOffset;
-
 	/** Additional offset applied to the aim target. This can be modified by other components. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TargetingAim")
 	FVector AdditionalAimOffset;
@@ -52,13 +48,10 @@ public:
 	virtual void UpdateComponent_Implementation(float DeltaTime) override;
 
 	/** Get original aim position, without AdditionalAimOffset. */
-	FVector GetOriginalAimPosition() { return UECameraComponentAim::GetRealAimPosition() + AimOffset; }
+	FVector GetAimPosition() { return UECameraComponentAim::GetRealAimPosition(true); }
 
 	/** Get the *real* aim position, based on world space. */
-	virtual FVector GetRealAimPosition() override { return UECameraComponentAim::GetRealAimPosition() + AimOffset + AdditionalAimOffset; }
-
-	/** Get AimOffset. */
-	FVector GetAimOffset() const { return AimOffset; }
+	virtual FVector GetRealAimPosition(bool bWithOffset) override { return UECameraComponentAim::GetRealAimPosition(bWithOffset) + AdditionalAimOffset; }
 
 	/** Get screen offset. */
 	FVector2D GetScreenOffset() { return ScreenOffset; }

@@ -23,7 +23,7 @@ void UModifyAimPointExtension::UpdateComponent_Implementation(float DeltaTime)
 		IsValid(TargetingAimComponent->GetAimTarget()))
 	{
 		FVector FollowPosition = ScreenFollowComponent->GetFollowPosition();
-		FVector AimPosition = TargetingAimComponent->GetOriginalAimPosition();
+		FVector AimPosition = TargetingAimComponent->GetAimPosition();
 		float PlanarDistance = UKismetMathLibrary::Vector_Distance2D(FollowPosition, AimPosition);
 
 		if (PlanarDistance < Radius)

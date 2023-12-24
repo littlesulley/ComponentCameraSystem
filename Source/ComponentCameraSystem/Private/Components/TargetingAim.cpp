@@ -15,7 +15,6 @@ UTargetingAim::UTargetingAim()
 	Stage = EStage::Aim;
 
 	bLocalRotation = false;
-	AimOffset = FVector(0.0f, 0.0f, 0.0f);
 	AdditionalAimOffset = FVector(0.0f, 0.0f, 0.0f);
 	DampParams = FDampParams();
 	ScreenOffset = FVector2D(0.0f, 0.0f);
@@ -28,7 +27,7 @@ void UTargetingAim::UpdateComponent_Implementation(float DeltaTime)
 	if (AimTarget != nullptr)
 	{
 		/** Get the *real* aim position, based on actor's local space. */
-		FVector AimPosition = GetRealAimPosition();
+		FVector AimPosition = GetRealAimPosition(true);
 
 		/** If camera is too close to aim target, return. */
 		if (CheckIfTooClose(AimPosition)) return;

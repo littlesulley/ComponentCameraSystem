@@ -32,10 +32,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FramingFollow")
 	UCurveFloat* PitchDistanceCurve;
 
-	/** Follow target's local space offset applied to the follow target. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FramingFollow")
-	FVector FollowOffset;
-
 	/** Whether to adapt camera orientation to character movement. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FramingFollow")
 	bool bAdaptToMovement;
@@ -56,11 +52,17 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FramingFollow", meta = (ClampMin = "-0.5", ClampMax = "0.5"))
 	FVector2D ScreenOffset;
 
-	/** Start and end distance in which adaptive screen offset (X axis) is enable. */
+	/** Start and end distance in which adaptive screen offset (X axis) is enable.
+	 *  Highly recommended to use the ConstrainPitchExtension and the ModifyAimPointExtension instead.
+	 *  Will be deprecated in the future.
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FramingFollow")
 	FVector2D AdaptiveScreenOffsetDistanceX;
 
-	/** Start and end distance in which adaptive screen offset (Y axis) is enable. */
+	/** Start and end distance in which adaptive screen offset (X axis) is enable.
+	 *  Highly recommended to use the ConstrainPitchExtension and the ModifyAimPointExtension instead.
+	 *  Will be deprecated in the future.
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FramingFollow")
 	FVector2D AdaptiveScreenOffsetDistanceY;
 

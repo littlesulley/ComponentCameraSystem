@@ -35,10 +35,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CraneFollow")
 	ECraneFollowType FollowType;
 
-	/** Follow offset, in world space. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CraneFollow", meta = (EditCondition = "FollowType == ECraneFollowType::FollowTarget"))
-	FVector FollowOffset;
-
 	/** Whether to lock arm length when FollowType is FollowTarget. You should be careful of the start arm length when enabling this. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CraneFollow", meta = (EditCondition = "FollowType == ECraneFollowType::FollowTarget"))
 	bool bLockArmLength;

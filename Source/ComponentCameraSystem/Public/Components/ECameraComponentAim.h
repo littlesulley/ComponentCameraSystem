@@ -23,6 +23,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CameraComponentAim")
 	TWeakObjectPtr<AActor> AimTarget;
 
+	/** User-specified world space position offset applied to the aim target. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CameraComponentAim")
+	FVector AimOffset {0.0f, 0.0f, 0.0f};
+
 	/** Optional SocketName. 
 	 *  If this socket can be found, its transform will be used.
 	 */
@@ -48,6 +52,17 @@ public:
 		return AimTarget.Get();
 	}
 
+	FVector SetAimOffset(FVector InAimOffset)
+	{
+		AimOffset = InAimOffset;
+		return AimOffset;
+	}
+
+	FVector GetAimOffset()
+	{
+		return AimOffset;
+	}
+
 	virtual FName SetAimSocket(FName NewAimSocket)
 	{
 		SocketName = NewAimSocket;
@@ -70,19 +85,30 @@ public:
 		return SceneComponent;
 	}
 
-	virtual FVector GetRealAimPosition() 
+	virtual FVector GetRealAimPosition(bool bWithOffset)
 	{ 
+		FVector RawAimPosition = FVector::ZeroVector;
+
 		if (IsSocketValid())
 		{
-			return GetSocketTransform().GetLocation();
+			RawAimPosition = GetSocketTransform().GetLocation();
 		}
 		else if (IsValid(SceneComponent))
 		{
-			return GetSceneComponentTransform().GetLocation();
+			RawAimPosition = GetSceneComponentTransform().GetLocation();
 		}
 		else
 		{
-			return AimTarget != nullptr ? AimTarget->GetActorLocation() : GetOwningActor()->GetActorLocation();
+			RawAimPosition = AimTarget != nullptr ? AimTarget->GetActorLocation() : GetOwningActor()->GetActorLocation();
+		}
+
+		if (bWithOffset)
+		{
+			return RawAimPosition + AimOffset;
+		}
+		else
+		{
+			return RawAimPosition;
 		}
 	}
 

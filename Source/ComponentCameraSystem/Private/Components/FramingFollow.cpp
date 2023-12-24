@@ -25,7 +25,6 @@ UFramingFollow::UFramingFollow()
 	Stage = EStage::PostAim;
 
 	CameraDistance = 200.0f;
-	FollowOffset = FVector(0.0f, 0.0f, 0.0f);
 	bAdaptToMovement = false;
 	AdaptToMovementSpeed = 1.0f;
 	ZoomSettings = FZoomSettings();
@@ -46,7 +45,7 @@ void UFramingFollow::UpdateComponent_Implementation(float DeltaTime)
 {
 	if (FollowTarget != nullptr)
 	{
-		FVector FollowPosition = GetRealFollowPosition(FollowOffset);
+		FVector FollowPosition = GetRealFollowPosition(true);
 
 		/** Get real screen offset. */
 		FVector AimPosition = FVector(0, 0, 0);
@@ -55,7 +54,7 @@ void UFramingFollow::UpdateComponent_Implementation(float DeltaTime)
 			GetOwningSettingComponent()->GetAimComponent()->IsA<class UTargetingAim>() &&
 			GetOwningSettingComponent()->GetAimComponent()->GetAimTarget() != nullptr)
 		{
-			AimPosition = Cast<UTargetingAim>(GetOwningSettingComponent()->GetAimComponent())->GetOriginalAimPosition();
+			AimPosition = Cast<UTargetingAim>(GetOwningSettingComponent()->GetAimComponent())->GetRealAimPosition(true);
 			RealScreenOffset = GetAdaptiveScreenOffset(FollowPosition, AimPosition);
 		}
 		else RealScreenOffset = ScreenOffset;

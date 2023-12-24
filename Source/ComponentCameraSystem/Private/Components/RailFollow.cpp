@@ -190,7 +190,7 @@ float URailFollow::GetNormalizedPositionOnRailNearestToTarget(AActor* Target)
 
 	if (Target == FollowTarget.Get())
 	{
-		FollowPosition = GetRealFollowPosition(FVector::ZeroVector);
+		FollowPosition = GetRealFollowPosition(false);
 	}
 	else
 	{

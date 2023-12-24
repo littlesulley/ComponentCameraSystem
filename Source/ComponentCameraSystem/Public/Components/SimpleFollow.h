@@ -24,10 +24,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SimpleFollow")
 	ESimpleFollowType FollowType;
 
-	/** Camera offset relative to the follow target. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SimpleFollow")
-	FVector FollowOffset;
-
 	/** Masks determining which axis is ignored to track the target actor. In world space.
 	 *  If mask is 0, this axis is ignored. If mask is non-zero, this axis will be tracked.  
 	 *	If you set any element of this property as zero, you should:
@@ -45,7 +41,7 @@ public:
 	virtual void UpdateComponent_Implementation(float DeltaTime) override;
 
 	/** Get the real follow location. */
-	FVector GetRealFollowPosition(const FVector& Offset) override;
+	FVector GetRealFollowPosition(bool bWithOffset) override;
 
 	/** Damp temporary delta position. */
 	FVector DampDeltaPosition(const FVector& TempDeltaPosition, float DeltaTime);

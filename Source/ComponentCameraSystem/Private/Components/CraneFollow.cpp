@@ -10,7 +10,6 @@ UCraneFollow::UCraneFollow()
 
 	bLockOrientationOutwards = false;
 	FollowType = ECraneFollowType::FollowTarget;
-	FollowOffset = FVector(0, 0, 0);
 	bLockArmLength = false;
 	bLockYaw = false;
 	bLockPitch = false;

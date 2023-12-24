@@ -25,6 +25,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CameraComponentFollow")
 	TWeakObjectPtr<AActor> FollowTarget;
 
+	/** Follow target's local space offset applied to the follow target. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CameraComponentFollow")
+	FVector FollowOffset {0.0, 0.0, 0.0};
+
 	/** Optional SocketName. 
 	 *  If this socket can be found, its transform will be used.
 	 *  You should be very CAREFUL of the socket's rotation, since the final location is based on the local space.
@@ -54,6 +58,17 @@ public:
 		return FollowTarget.Get();
 	}
 
+	FVector SetFollowOffset(FVector InFollowOffset)
+	{
+		FollowOffset = InFollowOffset;
+		return FollowOffset;
+	}
+
+	FVector GetFollowOffset()
+	{
+		return FollowOffset;
+	}
+
 	virtual FName SetFollowSocket(FName NewFollowSocket)
 	{
 		SocketName = NewFollowSocket;
@@ -76,7 +91,7 @@ public:
 		return SceneComponent;
 	}
 
-	virtual FVector GetRealFollowPosition(const FVector& Offset)
+	virtual FVector GetRealFollowPosition(bool bWithOffset)
 	{
 		FVector Position = FVector();
 		FRotator Rotation = FRotator();
@@ -107,7 +122,14 @@ public:
 			}
 		}
 
-		return UECameraLibrary::GetPositionWithLocalRotatedOffset(Position, Rotation, Offset);
+		if (bWithOffset)
+		{
+			return UECameraLibrary::GetPositionWithLocalRotatedOffset(Position, Rotation, FollowOffset);
+		}
+		else
+		{
+			return Position;
+		}
 	}
 
 	virtual bool IsSocketValid()

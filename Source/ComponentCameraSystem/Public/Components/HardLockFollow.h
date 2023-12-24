@@ -18,11 +18,6 @@ class COMPONENTCAMERASYSTEM_API UHardLockFollow : public UECameraComponentFollow
 public:
 	UHardLockFollow();
 
-protected:
-	/** Camera offset in follow target's local space. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HardLockFollow")
-	FVector FollowOffset;
-
 public:
 	virtual void UpdateComponent_Implementation(float DeltaTime) override;
 };

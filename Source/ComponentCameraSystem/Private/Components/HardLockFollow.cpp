@@ -7,13 +7,12 @@
 UHardLockFollow::UHardLockFollow()
 {
 	Stage = EStage::Follow;
-	FollowOffset = FVector(0.0f, 0.0f, 0.0f);
 }
 
 void UHardLockFollow::UpdateComponent_Implementation(float DeltaTime)
 {
 	if (FollowTarget != nullptr)
 	{
-		GetOwningActor()->SetActorLocation(GetRealFollowPosition(FollowOffset));
+		GetOwningActor()->SetActorLocation(GetRealFollowPosition(true));
 	}
 }
