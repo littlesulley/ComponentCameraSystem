@@ -16,7 +16,7 @@ class UUserWidget;
  *  An AEPlayerCameraManager manager is mandatory.'
  *  When enabling this camera, make sure current active camera has a valid follow target.
  */
-UCLASS(NotBlueprintable, BlueprintType, classGroup = "ECamera")
+UCLASS(Blueprintable, BlueprintType, classGroup = "ECamera")
 class COMPONENTCAMERASYSTEM_API AEPhotoCamera : public APawn
 {
 	GENERATED_BODY()
@@ -71,11 +71,17 @@ protected:
 	void PhotoModeShot(const FInputActionValue& Value);
 
 public:
+	/** The action of taking screenshot. This functioin will also call OnPhotoTaken, which you should implement in your Photo Camera. */
 	UFUNCTION(BlueprintCallable, Category = "EPhotoMode")
 	void PhotoModeTakeShot();
 
+	/** The action of quiting photo mode. */
 	UFUNCTION(BlueprintCallable, Category = "EPhotoMode")
 	void PhotoModeQuit();
+
+	/** Custom event when taking screenshot. Generally, this  */
+	UFUNCTION(BlueprintImplementableEvent, Category = "EPhotoMode", DisplayName = "OnPhotoTaken")
+	void OnPhotoTaken(UUserWidget* PhotoModeWidget);
 
 public:	
 	virtual void BecomeViewTarget(class APlayerController* PC) override;

@@ -79,9 +79,13 @@ protected:
 
 //  <- Photo mode camera. -> //
 
+	/** Photo mode camera class. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "EPlayerCameraManager|PhotoMode")
+	TSubclassOf<class AEPhotoCamera> PhotoModeCamera;
+
 	/** Photo mode UI. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "EPlayerCameraManager|PhotoMode")
-	TSubclassOf<class UUserWidget> PhotoModeUIClass;
+	TSubclassOf<class UUserWidget> PhotoModeWidget;
 
 	/** Input action for switching on/off photo mode. Make sure this action is added to current input mapping context. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "EPlayerCameraManager|PhotoMode")

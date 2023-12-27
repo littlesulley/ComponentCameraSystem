@@ -940,24 +940,21 @@ float AEPlayerCameraManager::GetBlendedWeight(const float& StartWeight, const fl
 
 void AEPlayerCameraManager::SwitchPhotoMode()
 {
-	if (PhotoModeUIClass == nullptr)
+	if (PhotoModeWidget == nullptr)
 	{
 		UE_LOG(LogTemp, Error, TEXT("UI Class is null. You must specify a valid UI class for photo mode. The provided UW_PhotoMode is highly recommended."));
 		return;
 	}
 
-	if (!IsValid(PhotoCamera))
-	{
-		AActor* PhotoCameraActor = UGameplayStatics::GetActorOfClass(this, AEPhotoCamera::StaticClass());
+	AActor* PhotoCameraActor = UGameplayStatics::GetActorOfClass(this, AEPhotoCamera::StaticClass());
 
-		if (IsValid(PhotoCameraActor))
-		{
-			PhotoCamera = Cast<AEPhotoCamera>(PhotoCameraActor);
-		}
-		else
-		{
-			PhotoCamera = GetWorld()->SpawnActor<AEPhotoCamera>();
-		}
+	if (IsValid(PhotoCameraActor))
+	{
+		PhotoCamera = Cast<AEPhotoCamera>(PhotoCameraActor);
+	}
+	else if (PhotoModeCamera)
+	{
+		PhotoCamera = Cast<AEPhotoCamera>(GetWorld()->SpawnActor(PhotoModeCamera));
 	}
 
 	AActor* ManagerActor = UGameplayStatics::GetActorOfClass(this, AECameraManager::StaticClass());
@@ -977,7 +974,7 @@ void AEPlayerCameraManager::SwitchPhotoMode()
 void AEPlayerCameraManager::PauseGame()
 {
 	/** Create and setup ui widget. */
-	PhotoModeUI = CreateWidget(GetOwningPlayerController(), PhotoModeUIClass);
+	PhotoModeUI = CreateWidget(GetOwningPlayerController(), PhotoModeWidget);
 	PhotoModeUI->AddToViewport();
 	PhotoModeUI->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	PhotoCamera->SetPhotoModeUI(PhotoModeUI);

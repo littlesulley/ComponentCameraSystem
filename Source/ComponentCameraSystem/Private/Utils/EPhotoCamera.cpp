@@ -182,6 +182,9 @@ void AEPhotoCamera::PhotoModeShot(const FInputActionValue& Value)
 
 	FString Command = FString::Format(TEXT("HighResShot {0}x{1} filename=\"{2}/HighResSnapshots/{3}.png\""), Args);
 	Cast<APlayerController>(GetController())->ConsoleCommand(Command, true);
+
+	/** Do something when screenshot is taken. */
+	OnPhotoTaken(PhotoModeUI);
 }
 
 void AEPhotoCamera::PhotoModeTakeShot()
