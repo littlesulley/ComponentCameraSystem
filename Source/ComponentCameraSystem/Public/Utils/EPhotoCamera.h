@@ -79,7 +79,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "EPhotoMode")
 	void PhotoModeQuit();
 
-	/** Custom event when taking screenshot. Generally, this  */
+	/** Custom event when taking screenshot. Generally, this function is used to play widget animation (as in the input PhotoModeWidget parameter) and do cleanup work. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "EPhotoMode", DisplayName = "OnPhotoTaken")
 	void OnPhotoTaken(UUserWidget* PhotoModeWidget);
 

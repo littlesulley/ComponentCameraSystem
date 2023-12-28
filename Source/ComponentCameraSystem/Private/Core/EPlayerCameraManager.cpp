@@ -1000,6 +1000,11 @@ void AEPlayerCameraManager::PauseGame()
 		}
 	}
 
+	if (UWorld* World = GetWorld())
+	{
+		World->bIsCameraMoveableWhenPaused = true;
+	}
+
 	UGameplayStatics::SetGamePaused(this, true);
 }
 
