@@ -12,6 +12,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Components/InputComponent.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "TimerManager.h"
@@ -22,11 +23,17 @@
 #include "Misc/DateTime.h"
 #include "Blueprint/UserWidget.h"
 
-AEPhotoCamera::AEPhotoCamera()
+AEPhotoCamera::AEPhotoCamera(const FObjectInitializer& ObjectInitializer) 
+	: Super(ObjectInitializer)
 {
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootSceneComponent"));
-	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
+	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereCollision"));
+	RootComponent = SphereComponent;
 
+	SphereComponent->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+	SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	SphereComponent->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	CameraComponent->SetupAttachment(RootComponent);
 }
 
@@ -34,14 +41,22 @@ void AEPhotoCamera::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Intialize();
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(PhotoModeMappingContext, 0);
+		}
+	}
+
+	PlayerCameraManager = Cast<AEPlayerCameraManager>(UGameplayStatics::GetActorOfClass(this, AEPlayerCameraManager::StaticClass()));
 }
 
 void AEPhotoCamera::BecomeViewTarget(class APlayerController* PC)
 {
 	if (IsValid(PlayerCameraManager))
 	{
-		PivotActor = PlayerCameraManager->GetPhotoModePivotActor();
+		PivotPosition = PlayerCameraManager->GetPhotoModePivotPosition();
 		ControlledPawn = PlayerCameraManager->GetPhotoModeControlledPawn();
 		SetActorLocation(PlayerCameraManager->GetCameraLocation());
 		SetActorRotation(PlayerCameraManager->GetCameraRotation());
@@ -58,7 +73,7 @@ void AEPhotoCamera::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) 
 	{
 		// Switch
 		EnhancedInputComponent->BindAction(PhotoModeAction, ETriggerEvent::Completed, this, &AEPhotoCamera::PhotoModeSwitch);
@@ -74,83 +89,61 @@ void AEPhotoCamera::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	}
 }
 
-void AEPhotoCamera::Intialize()
-{
-	AActor* CameraManagerActor = UGameplayStatics::GetActorOfClass(this, AEPlayerCameraManager::StaticClass());
-
-	if (AEPlayerCameraManager* CameraManager = Cast<AEPlayerCameraManager>(CameraManagerActor))
-	{
-		PlayerCameraManager = CameraManager;
-
-		/** Input actions. */
-		PhotoModeAction = PlayerCameraManager->GetPhotoModeAction();
-		PhotoModeMoveAction = PlayerCameraManager->GetPhotoModeMoveAction();
-		PhotoModeRotateAction = PlayerCameraManager->GetPhotoModeRotateAction();
-		PhotoModeShotAction = PlayerCameraManager->GetPhotoModeShotAction();
-
-		/** Photo mode parameters. */
-		MoveSpeedMultiplier = PlayerCameraManager->GetMoveSpeedMultiplier();
-		PhotoModeMaxRadius = PlayerCameraManager->GetPhotoModeMaxRaiuds();
-	}
-}
-
 void AEPhotoCamera::PhotoModeSwitch(const FInputActionValue& Value)
 {
-	if (IsValid(ControlledPawn))
-	{
-		FTimerManager* TimerManager = &GetWorld()->GetTimerManager();
+	FTimerManager* TimerManager = &GetWorld()->GetTimerManager();
 
-		AActor* ManagerActor = UGameplayStatics::GetActorOfClass(this, AECameraManager::StaticClass());
+	AActor* ManagerActor = UGameplayStatics::GetActorOfClass(this, AECameraManager::StaticClass());
 
-		if (IsValid(ManagerActor))
-		{
-			PlayerCameraManager->EasyStartCameraFade(0.0f, 1.0f, 0.5f, EEasingFunc::Linear, 0.2f, 0.5f, EEasingFunc::Linear, FLinearColor::Black);
-
-			ActiveCamera = Cast<AECameraManager>(ManagerActor)->GetActiveCamera();
-
-			FTimerHandle TimeHandle;
-			TimerManager->SetTimer(
-				TimeHandle,
-				[this]() {
-					Cast<APlayerController>(GetController())->SetViewTargetWithBlend(ActiveCamera, 0.0f);
-				},
-				0.5f,
-				false
-			);
-		}
+	if (IsValid(ManagerActor))
+	{			
+		PlayerCameraManager->EasyStartCameraFade(0.0f, 1.0f, 0.5f, EEasingFunc::Linear, 0.2f, 0.5f, EEasingFunc::Linear, FLinearColor::Black);
 
 		FTimerHandle TimeHandle;
 		TimerManager->SetTimer(
-			TimeHandle,
-			[this]() {
-				Cast<APlayerController>(GetController())->Possess(ControlledPawn);
+			TimeHandle, 
+			[this, ManagerActor]() {
+				Cast<APlayerController>(GetController())->SetViewTargetWithBlend(Cast<AECameraManager>(ManagerActor)->GetActiveCamera(), 0.0f);
 			},
-			0.7f,
+			0.5f,
 			false
 		);
-
-		PlayerCameraManager->UnpauseGame();
 	}
+
+	FTimerHandle TimeHandle;
+	TimerManager->SetTimer(
+		TimeHandle, 
+		[this]() {
+			Cast<APlayerController>(GetController())->Possess(ControlledPawn);
+		},
+		0.7f, 
+		false
+	);
+
+	OnPhotoModeQuit(PhotoModeUI);
+
+	PlayerCameraManager->UnpauseGame();
 }
 
 void AEPhotoCamera::PhotoModeMove(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	if (IsValid(PlayerCameraManager) && IsValid(PivotActor))
+	if (IsValid(PlayerCameraManager))
 	{
 		FRotator CameraRotation = PlayerCameraManager->GetCameraRotation();
 		FVector CurrentCameraLocation = PlayerCameraManager->GetCameraLocation();
 
-		AddActorWorldOffset(UKismetMathLibrary::GetRightVector(FRotator(CameraRotation.Pitch, CameraRotation.Yaw, 0.0f)) * MovementVector.X * MoveSpeedMultiplier);
-		AddActorWorldOffset(UKismetMathLibrary::GetForwardVector(FRotator(CameraRotation.Pitch, CameraRotation.Yaw, 0.0f)) * MovementVector.Y * MoveSpeedMultiplier);
+		// bSweep must be set to true to enable collision
+		AddActorWorldOffset(UKismetMathLibrary::GetRightVector(FRotator(CameraRotation.Pitch, CameraRotation.Yaw, 0.0f)) * MovementVector.X * MoveSpeedMultiplier, true);
+		AddActorWorldOffset(UKismetMathLibrary::GetForwardVector(FRotator(CameraRotation.Pitch, CameraRotation.Yaw, 0.0f)) * MovementVector.Y * MoveSpeedMultiplier, true);
 
-		if (UKismetMathLibrary::Vector_Distance(PivotActor->GetActorLocation(), GetActorLocation()) > PhotoModeMaxRadius)
+		if (UKismetMathLibrary::Vector_Distance(PivotPosition, GetActorLocation()) > PhotoModeMaxRadius)
 		{
-			FVector Direction = GetActorLocation() - PivotActor->GetActorLocation();
+			FVector Direction = GetActorLocation() - PivotPosition;
 			UKismetMathLibrary::Vector_Normalize(Direction);
 
-			SetActorLocation(PivotActor->GetActorLocation() + PhotoModeMaxRadius * Direction);
+			SetActorLocation(PivotPosition + PhotoModeMaxRadius * Direction);
 		}
 	}
 }

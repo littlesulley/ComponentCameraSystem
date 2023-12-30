@@ -21,6 +21,7 @@
 #include "UObject/ScriptInterface.h"
 #include "Engine/BlendableInterface.h"
 #include "Components/MeshComponent.h"
+#include "Components/SphereComponent.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Blueprint/UserWidget.h"
 
@@ -960,7 +961,14 @@ void AEPlayerCameraManager::SwitchPhotoMode()
 	AActor* ManagerActor = UGameplayStatics::GetActorOfClass(this, AECameraManager::StaticClass());
 	if (IsValid(ManagerActor))
 	{
-		PivotActor = Cast<AECameraManager>(ManagerActor)->GetActiveCamera()->GetFollowTarget();
+		if (Cast<AECameraManager>(ManagerActor)->GetActiveCamera()->GetFollowTarget())
+		{
+			PivotPosition = Cast<AECameraManager>(ManagerActor)->GetActiveCamera()->GetFollowTarget()->GetActorLocation();
+		}
+		else
+		{
+			PivotPosition = Cast<AECameraManager>(ManagerActor)->GetActiveCamera()->GetActorLocation();
+		}
 	}
 
 	ControlledPawn = GetOwningPlayerController()->GetPawn();
@@ -985,6 +993,8 @@ void AEPlayerCameraManager::PauseGame()
 	/** Set unpausable objects. */
 	GetOwningPlayerController()->bShowMouseCursor = true;
 	PhotoCamera->SetTickableWhenPaused(true);
+	PhotoCamera->CameraComponent->SetTickableWhenPaused(true);
+	PhotoCamera->SphereComponent->SetTickableWhenPaused(true);
 
 	for (TSubclassOf<AActor> UnpaussableObjectClass : UnpausableObjects)
 	{

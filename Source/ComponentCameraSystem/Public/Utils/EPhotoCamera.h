@@ -8,6 +8,7 @@
 #include "EPhotoCamera.generated.h"
 
 class UCameraComponent;
+class USphereComponent;
 class AECameraBase;
 class AEPlayerCameraManager;
 class UUserWidget;
@@ -22,37 +23,52 @@ class COMPONENTCAMERASYSTEM_API AEPhotoCamera : public APawn
 	GENERATED_BODY()
 
 public:
-	AEPhotoCamera();
+	AEPhotoCamera(const FObjectInitializer& ObjectInitializer);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "EPhotoMode")
 	UCameraComponent* CameraComponent;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "EPhotoMode")
+	USphereComponent* SphereComponent;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "EPhotoMode")
 	class AEPlayerCameraManager* PlayerCameraManager;
 
-protected:
-	UPROPERTY(VisibleAnywhere, Category = "EPhotoMode")
+	/** Input mapping context for this photo camera. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PhotoMode", meta = (AllowPrivateAccess = "true"))
+	class UInputMappingContext* PhotoModeMappingContext;
+
+	/** Input action for switching on/off photo mode. Make sure this action is added to current input mapping context. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PhotoMode")
 	class UInputAction* PhotoModeAction;
 
-	UPROPERTY(VisibleAnywhere, Category = "EPhotoMode")
+	/** Input action controlling movement of photo mode camera. Make sure this action is added to current input mapping context. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PhotoMode")
 	class UInputAction* PhotoModeMoveAction;
 
-	UPROPERTY(VisibleAnywhere, Category = "EPhotoMode")
+	/** Input action controlling rotation of photo mode camera. Make sure this action is added to current input mapping context. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PhotoMode")
 	class UInputAction* PhotoModeRotateAction;
 
-	UPROPERTY(VisibleAnywhere, Category = "EPhotoMode")
+	/** Input action for taking a screenshot. Make sure this action is added to current input mapping context. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PhotoMode")
 	class UInputAction* PhotoModeShotAction;
 
-	UPROPERTY(VisibleAnywhere, Category = "EPhotoMode")
+	/** Camera move speed multiplier, controls how fast photo camera moves. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PhotoMode", meta = (ClampMin = "0.1", ClampMax = "5.0"))
 	float MoveSpeedMultiplier = 4.0f;
 
-	UPROPERTY(VisibleAnywhere, Category = "EPhotoMode")
+	/** Photo mode max radius. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PhotoMode", meta = (ClampMin = "100.0", ClampMax = "10000.0"))
 	float PhotoModeMaxRadius = 1200.0f;
 
-private:
-	AActor* PivotActor;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PhotoMode")
+	FVector PivotPosition;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PhotoMode")
 	APawn* ControlledPawn;
-	AECameraBase* ActiveCamera;
+
+private:
 	UUserWidget* PhotoModeUI;
 
 protected:
@@ -83,15 +99,14 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "EPhotoMode", DisplayName = "OnPhotoTaken")
 	void OnPhotoTaken(UUserWidget* PhotoModeWidget);
 
+	/** Custom event when quitting photo mode. This happens before the underlying widget is destructed. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "EPhotoMode", DisplayName = "OnPhotoModeQuit")
+	void OnPhotoModeQuit(UUserWidget* PhotoModeWidget);
+
 public:	
 	virtual void BecomeViewTarget(class APlayerController* PC) override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	AActor* GetPivotActor() { return PivotActor; }
-
 	void SetPhotoModeUI(UUserWidget* InPhotoModeUI) { PhotoModeUI = InPhotoModeUI; }
-
-private:
-	void Intialize();
 };
