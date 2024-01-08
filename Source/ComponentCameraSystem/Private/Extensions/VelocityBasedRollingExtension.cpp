@@ -4,17 +4,19 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Utils/ECameraLibrary.h"
+#include "Utils/ERollDelayAction.h"
 
 UVelocityBasedRollingExtension::UVelocityBasedRollingExtension()
 {
 	// Should be applied at the last stage of the camera pipeline.
 	Stage = EStage::Finalize;
 
+	bInverse = false;
 	MaxRoll = 10.f;
 	MinVelocity = 200.f;
 	RollWaitTime = 0.5f;
 	RestoreWaitTime = 0.2f;
-	RollSceheme = ERollScheme::Constant;
+	RollScheme = ERollScheme::Constant;
 	RollSpeed = 45.f;
 	RollSpeedRatio = 0.01f;
 	RollDamping = 1.f;
@@ -25,12 +27,14 @@ UVelocityBasedRollingExtension::UVelocityBasedRollingExtension()
 	ElapsedRollWaitTime = 0.f;
 	ElapsedRestoreWaitTime = 0.f;
 	CurrentRoll = 0.f;
-	CachedFollowTargetLocation = FVector::ZeroVector;
+
+	InitRollAndRestoreMultiplierCurve();
 }
 
 void UVelocityBasedRollingExtension::UpdateComponent_Implementation(float DeltaTime)
 {
 	AActor* FollowTarget = nullptr;
+
 	if (GetOwningSettingComponent()->GetFollowTarget() != nullptr)
 	{
 		FollowTarget = GetOwningSettingComponent()->GetFollowTarget();
@@ -38,57 +42,80 @@ void UVelocityBasedRollingExtension::UpdateComponent_Implementation(float DeltaT
 
 	if (FollowTarget)
 	{
-		FVector CurrentFollowTargetLocation = FollowTarget->GetActorLocation();
-		FVector WorldVelocity = (CurrentFollowTargetLocation - CachedFollowTargetLocation) / DeltaTime;
-		FVector LocalVelocity = UECameraLibrary::GetLocalSpacePositionWithVectors(
-			FVector::ZeroVector,
-			GetOwningActor()->GetActorForwardVector(),
-			GetOwningActor()->GetActorRightVector(),
-			GetOwningActor()->GetActorUpVector(),
-			WorldVelocity
-		);
-
-		float CurrentVelocity = LocalVelocity.Y;
-
-		if (FMath::Abs(CurrentVelocity) > MinVelocity)
+		// When RollScheme is Manual, roll is fully controlled by you.
+		if (RollScheme == ERollScheme::Manual)
 		{
-			// If in rolling, immediately add to roll.
 			if (bRolling)
 			{
-				AddRoll(DeltaTime, CurrentVelocity);
-			}
-			// Otherwise, check elapsed wait time.
-			else
-			{
-				ElapsedRollWaitTime += DeltaTime;
+				MannualElapsedTime += DeltaTime;
 
-				// If pass, start rolling.
-				if (ElapsedRollWaitTime >= RollWaitTime)
+				CurrentRoll = UKismetMathLibrary::Ease(MannualOriginRoll, MannualTargetRoll, MannualElapsedTime / MannualDuration, MannualBlendFunc, MannualBlendExp);
+
+				if (MannualElapsedTime >= MannualDuration)
 				{
-					bRolling = true;
+					bRolling = false;
+				}
+			}
+		}
+		else
+		{
+			FVector WorldVelocity = FollowTarget->GetVelocity();
+			FVector LocalVelocity = UECameraLibrary::GetLocalSpacePositionWithVectors(
+				FVector::ZeroVector,
+				GetOwningActor()->GetActorForwardVector(),
+				GetOwningActor()->GetActorRightVector(),
+				GetOwningActor()->GetActorUpVector(),
+				WorldVelocity
+			);
+
+			float CurrentVelocity = LocalVelocity.Y;
+
+			if (FMath::Abs(CurrentVelocity) > MinVelocity)
+			{
+				// If in rolling, immediately add to roll.
+				if (bRolling)
+				{
 					AddRoll(DeltaTime, CurrentVelocity);
 				}
-			}
-		}
-		else if (bRolling)
-		{
-			// If roll is already close to zero, reset all cached variables.
-			if (!ResetWhenRollIsSmall())
-			{
-				ElapsedRestoreWaitTime += DeltaTime;
-
-				if (ElapsedRestoreWaitTime >= RestoreWaitTime)
-				{
-					RestoreRoll(DeltaTime);
-				}
+				// Otherwise, check elapsed wait time.
 				else
 				{
-					RemainRoll();
+					ElapsedRollWaitTime += DeltaTime;
+
+					// If pass, start rolling.
+					if (ElapsedRollWaitTime >= RollWaitTime)
+					{
+						bRolling = true;
+						AddRoll(DeltaTime, CurrentVelocity);
+					}
 				}
+			}
+			else if (bRolling)
+			{
+				// If roll is already close to zero, reset all cached variables.
+				// @TODO: should better deal with RestoreRoll and AddRoll.
+				if (!ResetWhenRollIsSmall())
+				{
+					ElapsedRestoreWaitTime += DeltaTime;
+
+					if (ElapsedRestoreWaitTime >= RestoreWaitTime)
+					{
+						RestoreRoll(DeltaTime);
+					}
+					else
+					{
+						RemainRoll();
+					}
+				}
+			}
+			else
+			{
+				ElapsedRollWaitTime = 0.0f;
+				ElapsedRestoreWaitTime = 0.0f;
 			}
 		}
 
-		CachedFollowTargetLocation = CurrentFollowTargetLocation;
+		GetOwningActor()->AddActorLocalRotation(FRotator(0, 0, CurrentRoll));
 	}
 }
 
@@ -98,7 +125,6 @@ void UVelocityBasedRollingExtension::ResetOnBecomeViewTarget(APlayerController* 
 	ElapsedRollWaitTime = 0.f;
 	ElapsedRestoreWaitTime = 0.f;
 	CurrentRoll = 0.f;
-	CachedFollowTargetLocation = FVector::ZeroVector;
 }
 
 void UVelocityBasedRollingExtension::BindToOnPreTickComponent()
@@ -107,40 +133,51 @@ void UVelocityBasedRollingExtension::BindToOnPreTickComponent()
 	GetOwningActor()->SetActorRotation(FRotator(CurrentRotation.Pitch, CurrentRotation.Yaw, 0));
 }
 
+void UVelocityBasedRollingExtension::InitRollAndRestoreMultiplierCurve()
+{
+	RollMultiplierCurve.EditorCurveData.AddKey(0.0f, 1.0f);
+	RollMultiplierCurve.EditorCurveData.AddKey(1.0f, 1.0f);
+	RestoreMultiplierCurve.EditorCurveData.AddKey(0.0f, 1.0f);
+	RestoreMultiplierCurve.EditorCurveData.AddKey(1.0f, 1.0f);
+}
+
 void UVelocityBasedRollingExtension::AddRoll(const float& DeltaTime, const float& CurrentVelocity)
 {
 	float RollAddition = 0.f;
 
-	if (RollSceheme == ERollScheme::Constant)
+	if (RollScheme == ERollScheme::Constant)
 	{
 		RollAddition = FMath::Sign(CurrentVelocity) * RollSpeed * DeltaTime;
 	}
-	else if (RollSceheme == ERollScheme::ProportionalToVelocity)
+	else if (RollScheme == ERollScheme::ProportionalToVelocity)
 	{
 		RollAddition = RollSpeedRatio * CurrentVelocity;
 	}
 
-	float ExpectedRoll = FMath::Clamp(CurrentRoll + RollAddition, -MaxRoll, MaxRoll);
+	if (bInverse)
+	{
+		RollAddition *= -1;
+	}
+	
+	RollAddition *= RollMultiplierCurve.GetRichCurveConst()->Eval(CurrentRoll);
 
+	float ExpectedRoll = FMath::Clamp(CurrentRoll + RollAddition, -MaxRoll, MaxRoll);
 	float DeltaRoll = ExpectedRoll - CurrentRoll;
+
 	float DampedDeltaRoll;
 	UECameraLibrary::DamperValue(FDampParams(), DeltaTime, DeltaRoll, RollDamping, DampedDeltaRoll);
 
 	CurrentRoll += DampedDeltaRoll;
-	GetOwningActor()->AddActorLocalRotation(FRotator(0, 0, CurrentRoll));
-
-	// Reset ElapsedRestoreWaitTime.
-	ElapsedRestoreWaitTime = 0.f;
 }
 
 void UVelocityBasedRollingExtension::RemainRoll()
 {
-	GetOwningActor()->AddActorLocalRotation(FRotator(0, 0, CurrentRoll));
+	// Do nothing, will always reset to CurrentRoll when tick ends.
 }
 
 void UVelocityBasedRollingExtension::RestoreRoll(const float& DeltaTime)
 {
-	float RollAddition = RestoreSpeed * DeltaTime;
+	float RollAddition = RestoreSpeed * DeltaTime * RestoreMultiplierCurve.GetRichCurveConst()->Eval(CurrentRoll);
 	float ExpectedRoll = CurrentRoll > 0 ? FMath::Max<float>(0, CurrentRoll - RollAddition) : FMath::Min<float>(0, CurrentRoll + RollAddition);
 
 	float DeltaRoll = ExpectedRoll - CurrentRoll;
@@ -148,12 +185,11 @@ void UVelocityBasedRollingExtension::RestoreRoll(const float& DeltaTime)
 	UECameraLibrary::DamperValue(FDampParams(), DeltaTime, DeltaRoll, RestoreDamping, DampedDeltaRoll);
 
 	CurrentRoll += DampedDeltaRoll;
-	GetOwningActor()->AddActorLocalRotation(FRotator(0, 0, CurrentRoll));
 }
 
 bool UVelocityBasedRollingExtension::ResetWhenRollIsSmall()
 {
-	bool bSmallEnough = FMath::Abs(CurrentRoll) < 0.1 ? true : false;
+	bool bSmallEnough = FMath::Abs(CurrentRoll) < 0.1;
 
 	if (bSmallEnough)
 	{
@@ -164,4 +200,68 @@ bool UVelocityBasedRollingExtension::ResetWhenRollIsSmall()
 	}
 
 	return bSmallEnough;
+}
+
+
+void UVelocityBasedRollingExtension::AsyncStartRoll(float TargetRoll, float Duration, TEnumAsByte<EEasingFunc::Type> BlendFunc, float BlendExp, struct FLatentActionInfo LatentInfo)
+{
+	if (UWorld* World = GetWorld())
+	{
+		FLatentActionManager& LatentActionManager = World->GetLatentActionManager();
+
+		if (LatentActionManager.FindExistingAction<FERollDelayAction>(LatentInfo.CallbackTarget, LatentInfo.UUID) == NULL)
+		{
+			LatentActionManager.AddNewAction(LatentInfo.CallbackTarget, LatentInfo.UUID, 
+				new FERollDelayAction(
+					GetOwningActor(),
+					this,
+					CurrentRoll, 
+					TargetRoll, 
+					Duration, 
+					BlendFunc,
+					BlendExp,
+					LatentInfo)
+			);
+		}
+
+		Action = LatentActionManager.FindExistingAction<FERollDelayAction>(LatentInfo.CallbackTarget, LatentInfo.UUID);
+	}
+	else
+	{
+		Action = nullptr;
+	}
+}
+
+void UVelocityBasedRollingExtension::AsyncPauseRoll(bool bSetPause)
+{
+	if (Action)
+	{
+		Action->SetPause(bSetPause);
+	}
+}
+
+void UVelocityBasedRollingExtension::StartRoll(float TargetRoll, float Duration, TEnumAsByte<EEasingFunc::Type> BlendFunc, float BlendExp)
+{
+	MannualOriginRoll = CurrentRoll;
+	MannualTargetRoll = TargetRoll;
+	MannualElapsedTime = 0.0f;
+	MannualDuration = Duration;
+	MannualBlendFunc = BlendFunc;
+	MannualBlendExp = BlendExp;
+
+	bRolling = true;
+}
+
+FVector UVelocityBasedRollingExtension::GetFollowTargetVelocity(AActor*& FollowTarget)
+{
+	if (GetOwningSettingComponent()->GetFollowTarget() != nullptr)
+	{
+		FollowTarget = GetOwningSettingComponent()->GetFollowTarget();
+		return FollowTarget->GetVelocity();
+	}
+	else
+	{
+		FollowTarget = nullptr;
+		return FVector::ZeroVector;
+	}
 }

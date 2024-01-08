@@ -12,6 +12,57 @@
 
 #include "ECameraTypes.generated.h"
 
+/**************************************************************************************/
+/*************************************  Begin macros. *********************************/
+/**************************************************************************************/
+
+#ifndef UE50
+#define UE50 (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION == 0)
+#endif
+
+#ifndef UE51
+#define UE51 (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION == 1)
+#endif
+
+#ifndef UE52
+#define UE52 (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION == 2)
+#endif
+
+#ifndef UE53
+#define UE53 (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION == 3)
+#endif
+
+#ifndef LATER_THAN_UE50
+#define LATER_THAN_UE50 (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 0)
+#endif
+
+#ifndef LATER_THAN_UE51
+#define LATER_THAN_UE51 (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1)
+#endif
+
+#ifndef LATER_THAN_UE52
+#define LATER_THAN_UE52 (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 2)
+#endif
+
+#ifndef LATER_THAN_UE53
+#define LATER_THAN_UE53 (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3)
+#endif
+
+#ifndef EARLIER_THAN_UE50
+#define EARLIER_THAN_UE50 ENGINE_MAJOR_VERSION < 5
+#endif
+
+#ifndef EARLIER_THAN_UE51
+#define EARLIER_THAN_UE51 (ENGINE_MAJOR_VERSION < 5 || ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION < 1)
+#endif
+
+#ifndef EARLIER_THAN_UE52
+#define EARLIER_THAN_UE52 (ENGINE_MAJOR_VERSION < 5 || ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION < 2)
+#endif
+
+#ifndef EARLIER_THAN_UE53
+#define EARLIER_THAN_UE53 (ENGINE_MAJOR_VERSION < 5 || ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION < 3)
+#endif
 
 /**************************************************************************************/
 /*************************************  Begin enums. **********************************/
@@ -245,6 +296,8 @@ enum class EMixingCameraMixScheme : uint8
 UENUM()
 enum class ERollScheme : uint8
 {
+	/** Manually set roll using blueprint node. */
+	Manual,
 	/** Constant speed */
 	Constant,
 	/** Proportional to follow target's velocity. */
