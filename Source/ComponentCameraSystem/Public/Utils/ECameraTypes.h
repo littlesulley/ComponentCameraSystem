@@ -292,6 +292,16 @@ enum class EMixingCameraMixScheme : uint8
 	Both
 };
 
+/** Methods to mix rotations of a mixing camera. */
+UENUM()
+enum class EMixingCameraMixRotationMethod : uint8
+{
+	/** Trivially mix rotations. Simple weighted average. May cause sudden jump.  */
+	Trivial,
+	/** Matrix decomposition to find the largest eigen-value. Smooth but at a high efficiency cost (involving multiple iterations). */
+	Eigenvalue
+};
+
 /** Strategies to apply camera rolling. */
 UENUM()
 enum class ERollScheme : uint8

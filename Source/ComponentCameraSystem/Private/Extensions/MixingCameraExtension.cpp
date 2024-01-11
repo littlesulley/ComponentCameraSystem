@@ -2,6 +2,7 @@
 
 #include "Extensions/MixingCameraExtension.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Utils/ECameraLibrary.h"
 
 UMixingCameraExtension::UMixingCameraExtension()
@@ -10,6 +11,7 @@ UMixingCameraExtension::UMixingCameraExtension()
 
 	WeightUpdateScheme = EMixingCameraWeightUpdateScheme::Manual;
 	MixScheme = EMixingCameraMixScheme::PositionOnly;
+	MixRotationMethod = EMixingCameraMixRotationMethod::Eigenvalue;
 }
 
 void UMixingCameraExtension::UpdateComponent_Implementation(float DeltaTime)
@@ -17,6 +19,7 @@ void UMixingCameraExtension::UpdateComponent_Implementation(float DeltaTime)
 	if (GetOwningSettingComponent()->IsActive())
 	{
 		int ValidCameras = RefreshWeights();
+
 		if (ValidCameras == 0)
 		{
 			return;
@@ -24,52 +27,25 @@ void UMixingCameraExtension::UpdateComponent_Implementation(float DeltaTime)
 
 		FVector Location = FVector::ZeroVector;
 		FRotator Rotation = FRotator::ZeroRotator;
-		float TotalWeight = 0.0f;
-
-		for (int i = 0; i < Cameras.Num(); ++i)
-		{
-			if (IsValid(Cameras[i]))
-			{
-				switch (MixScheme)
-				{
-				case EMixingCameraMixScheme::PositionOnly:
-				{
-					Location += Weights[i] * Cameras[i]->GetActorLocation();
-				}
-				break;
-				case EMixingCameraMixScheme::RotationOnly:
-				{
-					// Tricky to interpolate rotation. Vanilla slerp does not work.
-					UpdateWeightedRotation(TotalWeight, Rotation, Weights[i], Cameras[i]);
-				}
-				break;
-				case EMixingCameraMixScheme::Both:
-				{
-					Location += Weights[i] * Cameras[i]->GetActorLocation();
-					UpdateWeightedRotation(TotalWeight, Rotation, Weights[i], Cameras[i]);
-
-				}
-				break;
-				default:
-				{ }
-				}
-			}
-		}
 
 		switch (MixScheme)
 		{
 		case EMixingCameraMixScheme::PositionOnly:
 		{
+			Location = GetWeightedPosition();
 			GetOwningActor()->SetActorLocation(Location);
 		}
 		break;
 		case EMixingCameraMixScheme::RotationOnly:
 		{
+			Rotation = GetWeightedRotation();
 			GetOwningActor()->SetActorRotation(Rotation);
 		}
 		break;
 		case EMixingCameraMixScheme::Both:
 		{
+			Location = GetWeightedPosition();
+			Rotation = GetWeightedRotation();
 			GetOwningActor()->SetActorLocation(Location);
 			GetOwningActor()->SetActorRotation(Rotation);
 		}
@@ -233,6 +209,45 @@ int UMixingCameraExtension::RefreshWeights()
 	return ValidCameras;
 }
 
+FVector UMixingCameraExtension::GetWeightedPosition()
+{
+	FVector Location = FVector::ZeroVector;
+
+	for (int i = 0; i < Cameras.Num(); ++i)
+	{
+		if (IsValid(Cameras[i]))
+		{
+			Location += Weights[i] * Cameras[i]->GetActorLocation();
+		}
+	}
+
+	return Location;
+}
+
+FRotator UMixingCameraExtension::GetWeightedRotation()
+{
+	FRotator Rotation = FRotator::ZeroRotator;
+
+	if (MixRotationMethod == EMixingCameraMixRotationMethod::Eigenvalue)
+	{
+		Rotation = AverageRotations().Rotator();
+	}
+	else
+	{
+		float TotalWeight = 0.0f;
+
+		for (int i = 0; i < Cameras.Num(); ++i)
+		{
+			if (IsValid(Cameras[i]))
+			{
+				UpdateWeightedRotation(TotalWeight, Rotation, Weights[i], Cameras[i]);
+			}
+		}
+	}
+
+	return Rotation;
+}
+
 void UMixingCameraExtension::UpdateWeightedRotation(float& TotalWeight, FRotator& Rotation, float CurrentWeight, AECameraBase* Camera)
 {
 	TotalWeight += CurrentWeight;
@@ -264,4 +279,72 @@ void UMixingCameraExtension::UpdateWeightedRotation(float& TotalWeight, FRotator
 
 		Rotation = (1 - Alpha) * Rotation + Alpha * CameraRotation;
 	}
+}
+
+// Ref https://www.acsu.buffalo.edu/%7Ejohnc/ave_quat07.pdf
+FQuat UMixingCameraExtension::AverageRotations()
+{
+	// Must initialize as all-zeros
+	FMatrix Accumulated = FMatrix(
+		FPlane(0, 0, 0, 0),
+		FPlane(0, 0, 0, 0),
+		FPlane(0, 0, 0, 0),
+		FPlane(0, 0, 0, 0)
+	);
+
+	for (int i = 0; i < Cameras.Num(); ++i)
+	{
+		FQuat Q = Cameras[i]->GetActorQuat();
+
+		FMatrix M = FMatrix(
+			FPlane(Q.X * Q.X, Q.X * Q.Y, Q.X * Q.Z, Q.X * Q.W),
+			FPlane(Q.Y * Q.X, Q.Y * Q.Y, Q.Y * Q.Z, Q.Y * Q.W),
+			FPlane(Q.Z * Q.X, Q.Z * Q.Y, Q.Z * Q.Z, Q.Z * Q.W),
+			FPlane(Q.W * Q.X, Q.W * Q.Y, Q.W * Q.Z, Q.W * Q.W)
+		);
+
+		Accumulated += M * Weights[i];
+	}
+	
+	FVector4 V = FindEigenvectorUsingPI(Accumulated, FVector4(0, 0, 0, 1), 64);
+	FQuat Q = FQuat(V.X, V.Y, V.Z, V.W);
+	
+	return Q.W < 0 ? FQuat(-Q.X, -Q.Y, -Q.Z, -Q.W) : Q;
+}
+
+// Power iteration to find eigenvector. Ref https://en.wikipedia.org/wiki/Power_iteration 
+// Rayleigh quotient iteration converges faster, but involving computing matrix inverse. Ref https://en.wikipedia.org/wiki/Rayleigh_quotient_iteration
+FVector4 UMixingCameraExtension::FindEigenvectorUsingPI(const FMatrix& M, const FVector4& V, const int Steps, const float Epsilon)
+{
+	FVector4 EigenVector = V;
+	float EigenValue = M.TransformFVector4(EigenVector).X / EigenVector.X;
+
+	for (int i = 0; i < Steps; ++i)
+	{
+		FVector4 Mul = M.TransformFVector4(EigenVector);
+
+		FVector4 NewEigenVector = NormalizeVector4(Mul);
+		float NewEigenValue = M.TransformFVector4(NewEigenVector).X / NewEigenVector.X;
+
+		if (FMath::Abs(EigenValue - NewEigenValue) < Epsilon)
+		{
+			break;
+		}
+
+		EigenVector = NewEigenVector;
+		EigenValue = NewEigenValue;
+	}
+
+	return EigenVector;
+}
+
+FVector4 UMixingCameraExtension::NormalizeVector4(const FVector4& V, float Tolerance)
+{
+	float SquareSum = V.X * V.X + V.Y * V.Y + V.Z * V.Z + V.W * V.W;
+	if (SquareSum > Tolerance)
+	{
+		const float Scale = FMath::InvSqrt(SquareSum);
+		return FVector4(V.X * Scale, V.Y * Scale, V.Z * Scale, V.W * Scale);
+	}
+	return V;
 }
