@@ -166,7 +166,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "ECamera|ControlAim")
 	void StartRecentering(float Duration, TEnumAsByte<EEasingFunc::Type> Func, float Exp);
 
-	/** Immediately stop recentering. Used when recentering scheme is Manual. This function may be called when the follow target moves. */
+	/** Immediately stop recentering. Used when recentering scheme is Manual. This function may be called when the follow target starts to move. */
 	UFUNCTION(BlueprintCallable, Category = "ECamera|ControlAim")
 	void StopRecentering();
 

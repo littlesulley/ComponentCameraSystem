@@ -3,6 +3,8 @@
 
 #include "Utils/ECameraLibrary.h"
 #include "Utils/ESequencedCameraSetupActor.h"
+#include "Components/ECameraComponentAim.h"
+#include "Components/ControlAim.h"
 #include "Cameras/EAnimatedCamera.h"
 #include "Core/ECameraBase.h"
 #include "Core/ECameraSettingsComponent.h"
@@ -793,6 +795,27 @@ void UECameraLibrary::EasyStopCameraFade(const UObject* WorldContextObject, floa
 		Manager->EasyStopCameraFade(StopAlpha);
 	}
 }
+
+void UECameraLibrary::EasyStartRecentering(const UObject* WorldContextObject, float Duration, TEnumAsByte<EEasingFunc::Type> Func, float Exp)
+{
+	AECameraBase* CurrentCamera = GetActiveCamera(WorldContextObject);
+
+	if (IsValid(CurrentCamera) && CurrentCamera->GetSettingsComponent()->GetAimComponent()->IsA<UControlAim>())
+	{
+		Cast<UControlAim>(CurrentCamera->GetSettingsComponent()->GetAimComponent())->StartRecentering(Duration, Func, Exp);
+	}
+}
+
+void UECameraLibrary::EasyStopRecentering(const UObject* WorldContextObject)
+{
+	AECameraBase* CurrentCamera = GetActiveCamera(WorldContextObject);
+
+	if (IsValid(CurrentCamera) && CurrentCamera->GetSettingsComponent()->GetAimComponent()->IsA<UControlAim>())
+	{
+		Cast<UControlAim>(CurrentCamera->GetSettingsComponent()->GetAimComponent())->StopRecentering();
+	}
+}
+
 
 void UECameraLibrary::Generic_AccessCameraPropertyByName(UObject* OwnerObject, FName PropertyName, void* ValuePtr, FProperty* ValueProp, bool bSetter)
 {

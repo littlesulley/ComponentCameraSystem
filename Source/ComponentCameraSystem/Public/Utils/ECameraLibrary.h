@@ -538,6 +538,30 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "ECamera|Utils", meta = (DisplayName = "EasyStopCameraFade", WorldContext = "WorldContextObject"))
 	static void EasyStopCameraFade(const UObject* WorldContextObject, float StopAlpha = 0.0f);
+
+	/** A sugar of ControlAim's StartRecentering function. If current active camera does not have a ControlAim component, this function will do nothing.
+	  * 
+	  * Manually starts recentering. Used when recentering scheme is Manual, otherwise this function does nothing. 
+	  * If you would like to use this node when scheme is Auto, you should first set the scheme to Manual.
+	  * Once recentering completes, the camera will stop recentering to the heading direction, e.g., TargetForward.
+	  * Note that this function does not block player input. If player input is consumed during recentering, recentering will halt.
+	  * In this case, you may want to set bConsumeInput to false.
+	  * Besides, this function will determine the target heading direction once it's called. This means even if the heading direction
+	  * changes during recentering, this function will not use the new heading direction.
+	  * 
+	  * @param Duration - Recentering duration.
+	  * @param Func - Recentering function.
+	  * @param Exp - Recentering exponential.
+	  */
+	UFUNCTION(BlueprintCallable, Category = "ECamera|Utils", meta = (DisplayName = "EasyStartRecentering", WorldContext = "WorldContextObject"))
+	static void EasyStartRecentering(const UObject* WorldContextObject, float Duration, TEnumAsByte<EEasingFunc::Type> Func, float Exp);
+
+	/** A sugar of ControlAim's StopRecentering function. If current active camera does not have a ControlAim component, this function will do nothing.
+	  * 
+	  * Immediately stop recentering. Used when recentering scheme is Manual. This function may be called when the follow target starts to move. 
+	  */
+	UFUNCTION(BlueprintCallable, Category = "ECamera|Utils", meta = (DisplayName = "EasyStopRecentering", WorldContext = "WorldContextObject"))
+	static void EasyStopRecentering(const UObject* WorldContextObject);
 	
 	/**
 	 * Custom thunk function used to get and set a property's value. Does not support float and double properties.
