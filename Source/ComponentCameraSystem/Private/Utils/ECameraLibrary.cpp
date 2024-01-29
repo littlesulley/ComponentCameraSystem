@@ -800,7 +800,9 @@ void UECameraLibrary::EasyStartRecentering(const UObject* WorldContextObject, fl
 {
 	AECameraBase* CurrentCamera = GetActiveCamera(WorldContextObject);
 
-	if (IsValid(CurrentCamera) && CurrentCamera->GetSettingsComponent()->GetAimComponent()->IsA<UControlAim>())
+	if (IsValid(CurrentCamera)
+		&& IsValid(CurrentCamera->GetSettingsComponent()->GetAimComponent())
+		&& CurrentCamera->GetSettingsComponent()->GetAimComponent()->IsA<UControlAim>())
 	{
 		Cast<UControlAim>(CurrentCamera->GetSettingsComponent()->GetAimComponent())->StartRecentering(Duration, Func, Exp);
 	}
@@ -810,7 +812,9 @@ void UECameraLibrary::EasyStopRecentering(const UObject* WorldContextObject)
 {
 	AECameraBase* CurrentCamera = GetActiveCamera(WorldContextObject);
 
-	if (IsValid(CurrentCamera) && CurrentCamera->GetSettingsComponent()->GetAimComponent()->IsA<UControlAim>())
+	if (IsValid(CurrentCamera)
+		&& IsValid(CurrentCamera->GetSettingsComponent()->GetAimComponent())
+		&& CurrentCamera->GetSettingsComponent()->GetAimComponent()->IsA<UControlAim>())
 	{
 		Cast<UControlAim>(CurrentCamera->GetSettingsComponent()->GetAimComponent())->StopRecentering();
 	}
