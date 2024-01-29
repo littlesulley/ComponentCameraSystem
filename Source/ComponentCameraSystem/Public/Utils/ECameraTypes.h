@@ -298,8 +298,20 @@ enum class EMixingCameraMixRotationMethod : uint8
 {
 	/** Trivially mix rotations. Simple weighted average. May cause sudden jump.  */
 	Trivial,
-	/** Matrix decomposition to find the largest eigen-value. Smooth but at a high efficiency cost (involving multiple iterations). */
+	/** Matrix decomposition to find the largest eigen-value. Smooth but at a high efficiency cost (involving multiple iterations).
+	  * Blog: https://sulley.cc/2024/01/11/20/06/
+	  */
 	Eigenvalue
+};
+
+/** Strategies to recenter camera. */
+UENUM()
+enum class ERecenterScheme : uint8
+{
+	/** Auto-recenter camera. */
+	Auto,
+	/** Manually start and stop camera recentering. */
+	Manual
 };
 
 /** Strategies to apply camera rolling. */
@@ -356,6 +368,7 @@ struct FRecenteringParams
 	GENERATED_USTRUCT_BODY()
 
 public:
+
 	/** Whether to enable recentering. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FRecenteringParams")
 	bool bRecentering;
@@ -368,13 +381,23 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FRecenteringParams")
 	EHeading Heading;
 
-	/** How long will it take to start recentering since input is not given. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FRecenteringParams", meta = (EditCondition = "bRecentering ==  true"))
+	/** Scheme to recenter cameras. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FRecenteringParams")
+	ERecenterScheme RecenterScheme;
+
+	/** How long will it take to start recentering since input is not given. Only used when RecenterScheme is Auto. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FRecenteringParams", meta = (EditCondition = "bRecentering ==  true && RecenterScheme == ERecenterScheme::Auto"))
 	float WaitTime;
 
-	/** Time to finish recentering. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FRecenteringParams", meta = (EditCondition = "bRecentering ==  true"))
+	/** Time to finish recentering. Only used when RecenterScheme is Auto. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FRecenteringParams", meta = (EditCondition = "bRecentering ==  true && RecenterScheme == ERecenterScheme::Auto"))
 	float RecenteringTime;
+
+	/** Only do recentering when YAW between the camera forward direction and the heading direction is within this range. 
+	  * Used when scheme is Auto and heading is TargetForward.
+	  **/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FRecenteringParams", meta = (EditCondition = "Heading == EHeading::TargetForward && RecenterScheme == ERecenterScheme::Auto", ClampMin = "-180.0", ClampMax = "180.0"))
+	FVector2D RecenterRange;
 
 	/** Hard specified forward. Will ignore its pitch angle. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FRecenteringParams", meta = (EditCondition = "bRecentering ==  true && Heading == EHeading::HardForward"))
@@ -393,8 +416,10 @@ public:
 		: bRecentering(false)
 		, bResetPitch(false)
 		, Heading(EHeading::WorldForward)
+		, RecenterScheme(ERecenterScheme::Auto)
 		, WaitTime(2.0f)
 		, RecenteringTime(2.0f)
+		, RecenterRange(FVector2D(-175.f, 175.f))
 		, HardForward(FVector(1, 0, 0))
 	{ }
 };

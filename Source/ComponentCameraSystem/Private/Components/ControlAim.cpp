@@ -19,6 +19,7 @@ UControlAim::UControlAim()
 	Stage = EStage::Aim;
 
 	bEnhancedInput = false;
+	bConsumeInput = true;
 	AimAssist = FAimAssist();
 	HorizontalHeading = EHeading::WorldForward;
 	HorizontalHardForward = FVector(1, 0, 0);
@@ -34,7 +35,8 @@ UControlAim::UControlAim()
 
 	CachedMouseDeltaX = 0.0f;
 	CachedMouseDeltaY = 0.0f;
-	WaitElaspedTime = 0.0f;
+	bManualRecentering = false;
+	RecenteringWaitElaspedTime = 0.0f;
 	bInAimAssist = false;
 	ElapsedUpdateTime = 10.0f;
 	OffsetInAimAssist = FVector();
@@ -48,10 +50,24 @@ void UControlAim::ResetOnBecomeViewTarget(APlayerController* PC, bool bPreserveS
 void UControlAim::UpdateComponent_Implementation(float DeltaTime)
 {
 	GetMouseDelta();
+
+	/** Cache world and local follow position for rectification. */
+	bool bRectifyPosition = IsValid(GetOwningSettingComponent()->GetFollowComponent()) && GetOwningSettingComponent()->GetFollowComponent()->IsA<UFramingFollow>();
+	if (bRectifyPosition)
+	{
+		UFramingFollow* FramingFollow = Cast<UFramingFollow>(GetOwningSettingComponent()->GetFollowComponent());
+		WorldFollowPosition = FramingFollow->GetFollowPosition();
+		LocalFollowPosition = UECameraLibrary::GetLocalSpacePosition(GetOwningActor(), WorldFollowPosition);
+	}
 	
 	/** Resolve recentering. */
 	if (ResolveRecentering(DeltaTime))
 	{
+		if (bRectifyPosition)
+		{
+			RectifyCameraPosition();
+		}
+
 		CachedMouseDeltaX = 0;
 		CachedMouseDeltaY = 0;
 		return;
@@ -69,15 +85,6 @@ void UControlAim::UpdateComponent_Implementation(float DeltaTime)
 	/** Damp, constrain and set camera pitch. */
 	float ResultDeltaY = CachedMouseDeltaY + GetDampedMouseDelta(RawMouseDeltaY, false, DeltaTime);
 	ConstrainPitch(ResultDeltaY);
-
-	/** Cache world and local follow position for rectification. */
-	bool bRectifyPosition = IsValid(GetOwningSettingComponent()->GetFollowComponent()) && GetOwningSettingComponent()->GetFollowComponent()->IsA<UFramingFollow>();
-	if (bRectifyPosition)
-	{
-		UFramingFollow* FramingFollow = Cast<UFramingFollow>(GetOwningSettingComponent()->GetFollowComponent());
-		WorldFollowPosition = FramingFollow->GetFollowPosition();
-		LocalFollowPosition = UECameraLibrary::GetLocalSpacePosition(GetOwningActor(), WorldFollowPosition);
-	}
 	
 	/** If not in aim assist. */
 	if (!bInAimAssist)
@@ -87,8 +94,7 @@ void UControlAim::UpdateComponent_Implementation(float DeltaTime)
 		
 		if (bRectifyPosition)
 		{
-			FVector RectifiedFollowPosition = UKismetMathLibrary::TransformDirection(GetOwningActor()->GetActorTransform(), LocalFollowPosition) + GetOwningActor()->GetActorLocation();
-			GetOwningActor()->AddActorWorldOffset(WorldFollowPosition - RectifiedFollowPosition);
+			RectifyCameraPosition();
 		}
 	}
 	else
@@ -154,6 +160,13 @@ void UControlAim::UpdateComponent_Implementation(float DeltaTime)
 
 void UControlAim::GetMouseDelta()
 {
+	if (!bConsumeInput)
+	{
+		RawMouseDeltaX = 0;
+		RawMouseDeltaY = 0;
+		return;
+	}
+
 	/** Read from mouse input. */
 	if (!bEnhancedInput)
 	{
@@ -199,29 +212,74 @@ bool UControlAim::ResolveRecentering(const float& DeltaTime)
 {
 	if (RecenteringParams.bRecentering)
 	{
-		/** If input is not zero, return false. */
-		if (RawMouseDeltaX != 0 || RawMouseDeltaX != 0)
+		// Auto recentering
+		if (RecenteringParams.RecenterScheme == ERecenterScheme::Auto)
 		{
-			WaitElaspedTime = 0;
-			return false;
-		}
+			/** If input is not zero, return false. */
+			if (RawMouseDeltaX != 0 || RawMouseDeltaX != 0)
+			{
+				RecenteringWaitElaspedTime = 0;
+				return false;
+			}
 
-		WaitElaspedTime += DeltaTime;
-		if (WaitElaspedTime >= RecenteringParams.WaitTime)
+			RecenteringWaitElaspedTime += DeltaTime;
+			if (RecenteringWaitElaspedTime >= RecenteringParams.WaitTime)
+			{
+				FQuat TargetQuat = GetRecenteringTargetQuat();
+
+				// A special case where recentering needs to be paused
+				if (CheckIfPauseRecenteringWhenTargetForward(TargetQuat))
+				{
+					return false;
+				}
+
+				FRotator OutputRotation;
+				UECameraLibrary::DamperRotatorWithSameDampTime(FDampParams(), DeltaTime, UKismetMathLibrary::NormalizedDeltaRotator(TargetQuat.Rotator(), GetOwningActor()->GetActorRotation()), RecenteringParams.RecenteringTime, OutputRotation);
+				OutputRotation.Roll = 0;
+
+				GetOwningActor()->AddActorWorldRotation(FRotator(0, OutputRotation.Yaw, 0));
+				GetOwningActor()->AddActorLocalRotation(FRotator(OutputRotation.Pitch, 0, 0));
+
+				return true;
+			}
+			else return false;
+		}
+		// Manual recentering
+		else
 		{
-			FQuat TargetQuat = GetRecenteringTargetQuat();
-			FQuat OutputQuat;
-			UECameraLibrary::DamperQuaternion(GetOwningActor()->GetActorQuat(), TargetQuat, DeltaTime, RecenteringParams.RecenteringTime, OutputQuat);
+			/** If input is not zero, return false. */
+			if (RawMouseDeltaX != 0 || RawMouseDeltaX != 0)
+			{
+				bManualRecentering = false;
+				return false;
+			}
 
-			/** Set roll to 0, and apply to camera. */
-			FRotator OutputRotation = OutputQuat.Rotator();
-			OutputRotation.Roll = 0;
-			GetOwningActor()->SetActorRotation(OutputRotation);
-			return true;
+			if (bManualRecentering)
+			{
+				ManualRecenteringElapsedTime = FMath::Min(ManualRecenteringElapsedTime + DeltaTime, ManualRecenteringDuration);
+				float Progress = UKismetMathLibrary::Ease(0, 1, ManualRecenteringElapsedTime / ManualRecenteringDuration, ManualRecenteringFunc, ManualRecenteringExp);
+
+				FQuat OutputQuat = FQuat::Slerp(ManualRecenteringOriQuat, ManualRecenteringTargetQuat, Progress);
+				FRotator OutputRotation = OutputQuat.Rotator();
+				OutputRotation.Roll = 0;
+				GetOwningActor()->SetActorRotation(OutputRotation);
+
+				if (FMath::Abs(1 - Progress) < 1e-5)
+				{
+					bManualRecentering = false;
+				}
+
+				return true;
+			}
+			else
+			{
+				return false;
+			}
 		}
-		else return false;
+		
 	}
-	else return false;
+	
+	return false;
 }
 
 FQuat UControlAim::GetRecenteringTargetQuat()
@@ -372,7 +430,42 @@ bool UControlAim::CheckAimAssist()
 		{
 			return true;
 		}
+
 		else return false;
 	}
 	else return false;
+}
+
+void UControlAim::RectifyCameraPosition()
+{
+	FVector RectifiedFollowPosition = UKismetMathLibrary::TransformDirection(GetOwningActor()->GetActorTransform(), LocalFollowPosition) + GetOwningActor()->GetActorLocation();
+	GetOwningActor()->AddActorWorldOffset(WorldFollowPosition - RectifiedFollowPosition);
+}
+
+bool UControlAim::CheckIfPauseRecenteringWhenTargetForward(const FQuat& TargetQuat)
+{
+	return RecenteringParams.Heading == EHeading::TargetForward
+		&& GetOwningSettingComponent()->GetFollowTarget() != nullptr
+		&& GetOwningSettingComponent()->GetFollowTarget()->GetVelocity() != FVector::ZeroVector
+		&& !UKismetMathLibrary::InRange_FloatFloat(
+			UKismetMathLibrary::NormalizedDeltaRotator(TargetQuat.Rotator(), GetOwningActor()->GetActorRotation()).Yaw, 
+			RecenteringParams.RecenterRange[0], 
+			RecenteringParams.RecenterRange[1]);
+}
+
+void UControlAim::StartRecentering(float Duration, TEnumAsByte<EEasingFunc::Type> Func, float Exp)
+{
+	bManualRecentering = true;
+	ManualRecenteringDuration = Duration;
+	ManualRecenteringFunc = Func;
+	ManualRecenteringExp = Exp;
+	ManualRecenteringElapsedTime = 0;
+
+	ManualRecenteringTargetQuat = GetRecenteringTargetQuat();
+	ManualRecenteringOriQuat = GetOwningActor()->GetActorQuat();
+}
+
+void UControlAim::StopRecentering()
+{
+	bManualRecentering = false;
 }
