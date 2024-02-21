@@ -27,28 +27,40 @@ class COMPONENTCAMERASYSTEM_API UKeyframeExtension : public UECameraExtensionBas
 public:
 	UKeyframeExtension();
 
-protected:
-	/** A set of parameters controlling the generation of camera motions. */
+	/** A set of parameters controlling the generation of camera motions. Currently obsolete. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "KeyframeExtension")
 	FPCMGParams PCMGParams;
 
-	/** Override camera location to make it always track the specified actor in its local space. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "KeyframeExtension")
-	TSoftObjectPtr<AActor> LocationOverride;
+	/** In which actor's local space you want to play the keyframes, including position and rotation. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "KeyframeExtension")
+	AActor* CoordinateActor;
 
-	/** Location offset applied in the specified actor's local space. */
+	/** CoordinateActor's socket the camera is based on. If this is specified, this socket's local space will be used. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "KeyframeExtension", meta = (EditCondition = "CoordinateActor != nullptr"))
+	FName CoordinateSocket;
+
+	/** In which reference coordinate you want to apply the keyframes. Requires CoordinateActor is null. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "KeyframeExtension", meta = (EditCondition = "CoordinateActor == nullptr"))
+	FTransform Coordinate;
+
+	/** Whether to apply only keyframed positions in the specified CoordinateActor or Coordiante space.
+	  * If true, camera's rotation will be the original keyframed rotations.
+	  * Otherwise, the camera's final rotation will be changed according to the given CoordinateActor or Coordiante.
+	  */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "KeyframeExtension")
+	bool bCoordinateLocationOnly;
+
+	/** Location offset applied to the keyframed positions. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "KeyframeExtension")
 	FVector LocationOffset;
 
-	/** Whether to use the specified actor's rotation to override camera rotation on which the final camera rotation is based. 
-	 *  For example, if the overrided rotation is 90 degree in yaw, then all keyframes will rotate 90 degs in yaw.
-	 */
+	/** Make the camera always look at the specified actor. This happens after keyframe is applied. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "KeyframeExtension")
-	TSoftObjectPtr<AActor> RotationOverride;
+	AActor* AimOverride;
 
-	/** Make the camera always look at the specified actor. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "KeyframeExtension")
-	TSoftObjectPtr<AActor> AimOverride;
+	/** AimOverride's socket for the camera to aim at. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "KeyframeExtension", meta = (EditCondition = "AimOverride != nullptr"))
+	FName AimSocket;
 
 private:
 	UActorSequenceComponent* ActorSequenceComponent;
@@ -64,4 +76,6 @@ public:
 
 private:
 	void Initialize();
+	FTransform GetCoordinateTransform();
+	FVector GetAimDestLocation();
 };

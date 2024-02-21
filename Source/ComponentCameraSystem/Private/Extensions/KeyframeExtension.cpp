@@ -7,9 +7,6 @@
 #include "MovieScene.h"
 #include "MovieSceneTrack.h"
 #include "MovieSceneSection.h"
-#include "Channels/MovieSceneChannelProxy.h"
-#include "Channels/MovieSceneChannel.h"
-#include "Channels/MovieSceneChannelData.h"
 #include "Kismet/GameplayStatics.h"
 #include "Utils/ECameraLibrary.h"
 #include "Core/ECameraManager.h"
@@ -17,6 +14,8 @@
 UKeyframeExtension::UKeyframeExtension()
 {
 	PCMGParams = FPCMGParams();
+	Coordinate = FTransform();
+	bCoordinateLocationOnly = false;
 	LocationOffset = FVector();
 }
 
@@ -27,25 +26,25 @@ void UKeyframeExtension::UpdateComponent_Implementation(float DeltaTime)
 		/** Use the internal SetPlaybackPosition function to immediately set play back position.  */
 		SequencePlayer->SetPlaybackPosition(FMovieSceneSequencePlaybackParams(ElapsedFrames, EUpdatePositionMethod::Play));
 
-		/** Apply location override. */
-		if (LocationOverride.IsValid())
+		/** Get coordinate frame and apply keyframes. */
+		FTransform Frame = GetCoordinateTransform();
+
+		GetOwningCamera()->GetCameraComponent()->SetWorldLocation(UKismetMathLibrary::TransformLocation(Frame, GetOwningCamera()->GetCameraComponent()->GetRelativeLocation() + LocationOffset));
+		
+		if (!bCoordinateLocationOnly)
 		{
-			FVector NewLocation = UECameraLibrary::GetPositionWithLocalOffset(LocationOverride.Get(), GetOwningCamera()->GetCameraComponent()->GetRelativeLocation() + LocationOffset);
-			GetOwningCamera()->GetCameraComponent()->SetWorldLocation(NewLocation);
+			GetOwningCamera()->GetCameraComponent()->SetWorldRotation(UKismetMathLibrary::TransformRotation(Frame, GetOwningCamera()->GetCameraComponent()->GetRelativeRotation()));
+		}
+		else
+		{
+			GetOwningCamera()->GetCameraComponent()->SetWorldRotation(GetOwningCamera()->GetCameraComponent()->GetRelativeRotation());
 		}
 
-		/** Apply rotation override. */
-		if (RotationOverride.IsValid())
-		{
-			FRotator NewRotator = RotationOverride.Get()->GetActorRotation() + GetOwningCamera()->GetCameraComponent()->GetRelativeRotation();
-			GetOwningCamera()->GetCameraComponent()->SetWorldRotation(NewRotator);
-		}
-
-		/** Use aim override. */
-		if (AimOverride.IsValid())
+		/** Aim override. */
+		if (IsValid(AimOverride))
 		{
 			FRotator RawRotation = GetOwningCamera()->GetCameraComponent()->GetRelativeRotation();
-			FRotator NewRotation = UKismetMathLibrary::FindLookAtRotation(GetOwningCamera()->GetCameraComponent()->GetComponentLocation(), AimOverride.Get()->GetActorLocation());
+			FRotator NewRotation = UKismetMathLibrary::FindLookAtRotation(GetOwningCamera()->GetCameraComponent()->GetComponentLocation(), GetAimDestLocation());
 			GetOwningCamera()->GetCameraComponent()->SetWorldRotation(FRotator(NewRotation.Pitch, NewRotation.Yaw, RawRotation.Roll));
 		}
 		
@@ -78,4 +77,61 @@ void UKeyframeExtension::Initialize()
 		MovieSequence = ActorSequenceComponent->GetSequence();
 		SequencePlayer = ActorSequenceComponent->GetSequencePlayer();
 	}
+}
+
+FTransform UKeyframeExtension::GetCoordinateTransform()
+{
+	if (!IsValid(CoordinateActor))
+	{
+		return Coordinate;
+	}
+
+	FTransform Frame = CoordinateActor->GetActorTransform();
+
+	if (CoordinateSocket.IsNone() || !CoordinateSocket.IsValid())
+	{
+		return Frame;
+	}
+
+	UActorComponent* ActorComponent = CoordinateActor->GetComponentByClass(USkeletalMeshComponent::StaticClass());
+
+	if (ActorComponent == nullptr)
+	{
+		return Frame;
+	}
+
+	USkeletalMeshComponent* SkeletonComponent = Cast<USkeletalMeshComponent>(ActorComponent);
+
+	if (SkeletonComponent->DoesSocketExist(CoordinateSocket))
+	{
+		return SkeletonComponent->GetSocketTransform(CoordinateSocket);
+	}
+
+	return Frame;
+}
+
+FVector UKeyframeExtension::GetAimDestLocation()
+{
+	FVector DestLocation = AimOverride->GetActorLocation();
+
+	if (AimSocket.IsNone() || !AimSocket.IsValid())
+	{
+		return DestLocation;
+	}
+
+	UActorComponent* ActorComponent = AimOverride->GetComponentByClass(USkeletalMeshComponent::StaticClass());
+
+	if (ActorComponent == nullptr)
+	{
+		return DestLocation;
+	}
+
+	USkeletalMeshComponent* SkeletonComponent = Cast<USkeletalMeshComponent>(ActorComponent);
+
+	if (SkeletonComponent->DoesSocketExist(AimSocket))
+	{
+		return SkeletonComponent->GetSocketLocation(AimSocket);
+	}
+
+	return DestLocation;
 }

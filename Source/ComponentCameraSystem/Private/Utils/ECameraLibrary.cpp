@@ -5,12 +5,14 @@
 #include "Utils/ESequencedCameraSetupActor.h"
 #include "Components/ECameraComponentAim.h"
 #include "Components/ControlAim.h"
+#include "Cameras/EKeyframedCamera.h"
 #include "Cameras/EAnimatedCamera.h"
 #include "Core/ECameraBase.h"
 #include "Core/ECameraSettingsComponent.h"
 #include "Core/ECameraManager.h"
 #include "Core/EPlayerCameraManager.h"
 #include "Extensions/AnimatedCameraExtension.h"
+#include "Extensions/KeyframeExtension.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
@@ -637,8 +639,8 @@ AECameraBase* UECameraLibrary::CallCameraWithSceneComponent(
 
 AECameraBase* UECameraLibrary::CallAnimatedCamera(const UObject* WorldContextObject,            // World context object.
 												  UAnimSequence* AnimToPlay,                    // Animation sequence to play.
-												  FTransform RefCoordinate,                     // In which reference frame you want to play the camera animation.
-												  AActor* RefCoordinateActor,					// In which actor's local space you want to play the camera animation.
+												  AActor* CoordinateActor,					    // In which actor's local space you want to play the camera animation.
+												  const FTransform& Coordinate,                 // In which reference frame you want to play the camera animation.
 												  FVector PositionOffset,						// Position offset, in reference space.
 												  float BlendTime,								// Blend time from prior camera.
 												  enum EViewTargetBlendFunction BlendFunc,		// Blend function
@@ -666,10 +668,62 @@ AECameraBase* UECameraLibrary::CallAnimatedCamera(const UObject* WorldContextObj
 	if (AnimatedCameraExtension)
 	{
 		AnimatedCameraExtension->SetAnim(AnimToPlay);
-		AnimatedCameraExtension->SetRefActor(RefCoordinateActor);
-		AnimatedCameraExtension->SetRef(RefCoordinate);
+		AnimatedCameraExtension->SetRefActor(CoordinateActor);
+		AnimatedCameraExtension->SetRef(Coordinate);
 		AnimatedCameraExtension->SetOffset(PositionOffset);
 	}
+
+	if (World != nullptr)
+	{
+		Camera->ResetOnBecomeViewTarget(true, 99999.f, false);
+
+		APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0);
+		PC->SetViewTargetWithBlend(Camera, BlendTime, BlendFunc, BlendExp, bLockOutgoing);
+	}
+
+	return Camera;
+}
+
+AECameraBase* UECameraLibrary::CallKeyframedCamera(const UObject* WorldContextObject,                    // World context object.
+												   TSubclassOf<AEKeyframedCamera> KeyframedCamera,       // Keyframed camera to play.
+												   AActor* CoordinateActor,                              // In which actor's local space you want to apply keyframes.
+												   FName CoordinateSocket,                               // CoordinateActor's socket the camera is based on.
+												   const FTransform& Coordinate,						 // In which reference frame you want to apply keyframes.
+												   bool bCoordinateLocationOnly,						 // Whether to apply only positions in coordiante space.
+												   FVector LocationOffset,							     // Position offset, in coordiante space.
+												   AActor* AimOverride,									 // Actor to aim at.
+												   FName AimSocket,										 // AimOverride's socket to aim at.
+												   float BlendTime,										 // Blend time from prior camera.
+												   enum EViewTargetBlendFunction BlendFunc,				 // Blend function
+												   float BlendExp, 										 // Blend exponential.
+												   bool bLockOutgoing)									 // Whether to lock outgoing frame.
+{
+	if (!IsValid(KeyframedCamera))
+	{
+		return nullptr;
+	}
+
+	AEKeyframedCamera* Camera;
+
+	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+	if (World != nullptr)
+	{
+		Camera = CastChecked<AEKeyframedCamera>(World->SpawnActor(KeyframedCamera));
+	}
+	else
+	{
+		return nullptr;
+	}
+
+	UKeyframeExtension* Extension = Cast<UKeyframeExtension>(Camera->GetExtensionOfClass(UKeyframeExtension::StaticClass()));
+
+	Extension->CoordinateActor = CoordinateActor;
+	Extension->CoordinateSocket = CoordinateSocket;
+	Extension->Coordinate = Coordinate;
+	Extension->bCoordinateLocationOnly = bCoordinateLocationOnly;
+	Extension->LocationOffset = LocationOffset;
+	Extension->AimOverride = AimOverride;
+	Extension->AimSocket = AimSocket;
 
 	if (World != nullptr)
 	{

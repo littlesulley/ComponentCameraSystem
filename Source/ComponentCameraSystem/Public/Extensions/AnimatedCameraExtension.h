@@ -31,11 +31,11 @@ protected:
 
 	/** In which actor's local space you want to play the camera animation. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AnimatedCameraExtension")
-	TSoftObjectPtr<AActor> RefCoordinateActor;
+	TSoftObjectPtr<AActor> CoordinateActor;
 
 	/** In which reference frame you want to play the camera animation. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AnimatedCameraExtension", meta = (EditCondition = "RefCoordinateActor == nullptr"))
-	FTransform RefCoordinate;
+	FTransform Coordinate;
 
 	/** Position offset, in reference space. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AnimatedCameraExtension")
@@ -49,8 +49,8 @@ public:
 	virtual void ResetOnBecomeViewTarget(APlayerController* PC, bool bPreserveState) override;
 
 	void SetAnim(UAnimSequence* NewAnim) { if (NewAnim) AnimToPlay = NewAnim; }
-	void SetRefActor(AActor* NewActor) { if (NewActor) RefCoordinateActor = NewActor; }
-	void SetRef(FTransform NewTransform) { RefCoordinate = NewTransform; }
+	void SetRefActor(AActor* NewActor) { if (NewActor) CoordinateActor = NewActor; }
+	void SetRef(FTransform NewTransform) { Coordinate = NewTransform; }
 	void SetOffset(FVector NewOffset) { PositionOffset = NewOffset; }
 
 private:

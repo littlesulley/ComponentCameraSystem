@@ -29,7 +29,7 @@ void UAnimatedCameraExtension::UpdateComponent_Implementation(float DeltaTime)
 		OutTransform.SetLocation(OutTransform.GetLocation() + PositionOffset);
 
 		/** Get ref frame. */
-		FTransform RefFrame = RefCoordinateActor == nullptr ? RefCoordinate : RefCoordinateActor->GetActorTransform();
+		FTransform RefFrame = CoordinateActor == nullptr ? Coordinate : CoordinateActor->GetActorTransform();
 
 		/** Get transform in world space relative to the ref frame. */
 		FTransform NewTransform;

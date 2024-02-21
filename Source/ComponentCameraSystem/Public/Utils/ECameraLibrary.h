@@ -425,16 +425,33 @@ public:
 
 	/** Call an animated camera, i.e., driven by an animation sequence. This is usually used inside a skill.
 	 * @param AnimToPlay - The animation sequence you want to play on camera.
-	 * @param RefCoordinate - In which reference frame you want to play the camera animation.
-	 * @param RefCoordinateActor - In which actor's local space you want to play the camera animation.
+	 * @param CoordinateActor - In which actor's local space you want to play the camera animation.
+	 * @param Coordinate - In which reference frame you want to play the camera animation.
 	 * @param PositionOffset - Position offset, in reference space.
 	 * @param BlendTime - Blend-in time used for transitioning from the current active camera to the new camera.
 	 * @param BlendFunc - Which type of blend function to use.
 	 * @param BlendExp - Blend exponential.
 	 * @param bLockOutgoing - If true, lock outgoing viewtarget to last frame's camera position for the remainder of the blend.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "ECamera|Utils", meta = (DisplayName = "CallAnimatedCamera", WorldContext = "WorldContextObject"))
-	static AECameraBase* CallAnimatedCamera(const UObject* WorldContextObject, UAnimSequence* AnimToPlay, FTransform RefCoordinate, AActor* RefCoordinateActor = nullptr, FVector PositionOffset = FVector(0, 0, 0), float BlendTime = 0.0f, enum EViewTargetBlendFunction BlendFunc = EViewTargetBlendFunction::VTBlend_Linear, float BlendExp = 2.0f, bool bLockOutgoing = false);
+	UFUNCTION(BlueprintCallable, Category = "ECamera|Utils", meta = (DisplayName = "CallAnimatedCamera", WorldContext = "WorldContextObject", AutoCreateRefTerm = "Coordinate", AdvancedDisplay = 3))
+	static AECameraBase* CallAnimatedCamera(const UObject* WorldContextObject, UAnimSequence* AnimToPlay, AActor* CoordinateActor, const FTransform& Coordinate, FVector PositionOffset, float BlendTime = 0.0f, enum EViewTargetBlendFunction BlendFunc = EViewTargetBlendFunction::VTBlend_Linear, float BlendExp = 2.0f, bool bLockOutgoing = false);
+	
+	/** Call a keyframed camera.
+	 * @param KeyframedCamera - The keyframed camera you want to play.
+	 * @param CoordinateActor - In which actor's local space you want to apply the keyframes.
+	 * @param CoordinateSocket - CoordinateActor's socket the camera is based on. If this is specified, this socket's local space will be used. 
+	 * @param Coordinate - In which reference frame you want to apply the keyframes.
+	 * @param bCoordinateLocationOnly - Whether to apply only keyframed positions in the specified CoordinateActor or Coordinate space.
+	 * @param LocationOffset - Position offset, in reference coordinate space.
+	 * @param AimOverride - The actor at which the camera will tries to aim.
+	 * @param AimSocket - The socket of AimOverride at which the camera will tries to aim. If null or None, it will be the actor's root.
+	 * @param BlendTime - Blend-in time used for transitioning from the current active camera to the new camera.
+	 * @param BlendFunc - Which type of blend function to use.
+	 * @param BlendExp - Blend exponential.
+	 * @param bLockOutgoing - If true, lock outgoing viewtarget to last frame's camera position for the remainder of the blend.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "ECamera|Utils", meta = (DisplayName = "CallKeyframedCamera", WorldContext = "WorldContextObject", AutoCreateRefTerm = "Coordinate", AdvancedDisplay = 3))
+	static AECameraBase* CallKeyframedCamera(const UObject* WorldContextObject, TSubclassOf<class AEKeyframedCamera> KeyframedCamera, AActor* CoordinateActor, FName CoordinateSocket, const FTransform & Coordinate, bool bCoordinateLocationOnly = false, FVector LocationOffset = FVector(0, 0, 0), AActor* AimOverride = nullptr, FName AimSocket = FName("None"), float BlendTime = 0.0f, enum EViewTargetBlendFunction BlendFunc = EViewTargetBlendFunction::VTBlend_Linear, float BlendExp = 2.0f, bool bLockOutgoing = false);
 	
 	/** Call a sequenced camera.
 	 * @param SequencedCameraClass - A class of type ESequencedCameraSetupActor specifying sub-camera with their blending setups.
