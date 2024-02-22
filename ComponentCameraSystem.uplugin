@@ -1,0 +1,59 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "0.1",
+	"FriendlyName": "ComponentCameraSystem",
+	"Description": "ComponentCameraSystem is an add-on for Unreal Engine enabling you to painlessly create a wide strand of cameras.",
+	"Category": "Other",
+	"CreatedBy": "Sulley",
+	"DocsURL": "https://sulleyyys-organization.gitbook.io/manuals-of-ccs/",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/7dd53db6fd3a4ccfa4c35e6b2125b742",
+	"SupportURL": "",
+	"EngineVersion": "5.0.0",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": true,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "ComponentCameraSystem",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [ "Win64", "Android", "Linux", "LinuxArm64" ]
+		},
+		{
+			"Name": "ComponentCameraSystemNonAndroid",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [ "Win64", "Linux" ]
+		},
+		{
+			"Name": "ComponentCameraSystemEditor",
+			"Type": "Editor",
+			"LoadingPhase": "PostEngineInit",
+			"WhitelistPlatforms": [ "Win64", "Android", "Linux", "LinuxArm64" ]
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "GameplayCameras",
+			"Enabled": true
+		},
+		{
+			"Name": "EnhancedInput",
+			"Enabled": true
+		},
+		{
+			"Name": "ActorSequence",
+			"Enabled": true
+		},
+		{
+			"Name": "NeuralNetworkInference",
+			"Enabled": true
+		},
+		{
+			"Name": "MovieRenderPipeline",
+			"Enabled": true
+		}
+	]
+}
