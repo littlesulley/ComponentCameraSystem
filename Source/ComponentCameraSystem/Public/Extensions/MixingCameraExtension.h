@@ -86,6 +86,7 @@ private:
 	FRotator GetWeightedRotation();
 	void UpdateWeightedRotation(float& TotalWeight, FRotator& Rotation, float CurrentWeight, AECameraBase* Camera);
 	FQuat AverageRotations();
+	FRotator CircularAverageRotations();
 	FVector4 FindEigenvectorUsingPI(const FMatrix& M, const FVector4& V, const int Steps, const float Epsilon = 1e-5f);
 	FVector4 NormalizeVector4(const FVector4& V, float Tolerance = 1e-5f);
 };

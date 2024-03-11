@@ -301,7 +301,9 @@ enum class EMixingCameraMixRotationMethod : uint8
 	/** Matrix decomposition to find the largest eigen-value. Smooth but at a high efficiency cost (involving multiple iterations).
 	  * Blog: https://sulley.cc/2024/01/11/20/06/
 	  */
-	Eigenvalue
+	Eigenvalue,
+	/** Use smoothed circular mean. Ref: https://sulley.cc/2024/01/11/20/06/#sc-lerp-smoothed-c-lerp */
+	Circular
 };
 
 /** Strategies to recenter camera. */
