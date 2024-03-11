@@ -232,6 +232,10 @@ FRotator UMixingCameraExtension::GetWeightedRotation()
 	{
 		Rotation = AverageRotations().Rotator();
 	}
+	else if (MixRotationMethod == EMixingCameraMixRotationMethod::Circular)
+	{
+		Rotation = CircularAverageRotations();
+	}
 	else
 	{
 		float TotalWeight = 0.0f;
@@ -310,6 +314,32 @@ FQuat UMixingCameraExtension::AverageRotations()
 	FQuat Q = FQuat(V.X, V.Y, V.Z, V.W);
 	
 	return Q.W < 0 ? -Q : Q;
+}
+
+// Ref https://sulley.cc/2024/01/11/20/06/#sc-lerp-smoothed-c-lerp
+FRotator UMixingCameraExtension::CircularAverageRotations()
+{
+	float SumSinYaw = 0.f, SumCosYaw = 0.f;
+	float SumSinPitch = 0.f, SumCosPitch = 0.f;
+	float SumSinRoll = 0.f, SumCosRoll = 0.f;
+
+	for (int i = 0; i < Cameras.Num(); ++i)
+	{
+		FRotator Q = Cameras[i]->GetActorRotation();
+		
+		SumSinYaw   += Weights[i] * UKismetMathLibrary::DegSin(Q.Yaw);
+		SumCosYaw   += Weights[i] * UKismetMathLibrary::DegCos(Q.Yaw);
+		SumSinPitch += Weights[i] * UKismetMathLibrary::DegSin(Q.Pitch);
+		SumCosPitch += Weights[i] * UKismetMathLibrary::DegCos(Q.Pitch);
+		SumSinRoll  += Weights[i] * UKismetMathLibrary::DegSin(Q.Roll);
+		SumCosRoll  += Weights[i] * UKismetMathLibrary::DegCos(Q.Roll);
+	}
+
+	return FRotator(
+		FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(SumSinPitch, SumCosPitch + 0.2)),
+		FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(SumSinYaw, SumCosYaw + 0.2)),
+		FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(SumSinRoll, SumCosRoll + 0.2))
+	);
 }
 
 // Power iteration to find eigenvector. Ref https://en.wikipedia.org/wiki/Power_iteration 
