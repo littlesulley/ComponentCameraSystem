@@ -12,6 +12,7 @@ UMixingCameraExtension::UMixingCameraExtension()
 	WeightUpdateScheme = EMixingCameraWeightUpdateScheme::Manual;
 	MixScheme = EMixingCameraMixScheme::PositionOnly;
 	MixRotationMethod = EMixingCameraMixRotationMethod::Eigenvalue;
+	CircularEpsilon = 0.25f;
 }
 
 void UMixingCameraExtension::UpdateComponent_Implementation(float DeltaTime)
@@ -336,9 +337,9 @@ FRotator UMixingCameraExtension::CircularAverageRotations()
 	}
 
 	return FRotator(
-		FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(SumSinPitch, SumCosPitch + 0.2)),
-		FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(SumSinYaw, SumCosYaw + 0.2)),
-		FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(SumSinRoll, SumCosRoll + 0.2))
+		FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(SumSinPitch, SumCosPitch + CircularEpsilon)),
+		FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(SumSinYaw, SumCosYaw + CircularEpsilon)),
+		FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(SumSinRoll, SumCosRoll + CircularEpsilon))
 	);
 }
 

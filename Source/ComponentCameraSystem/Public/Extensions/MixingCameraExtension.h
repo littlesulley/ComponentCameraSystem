@@ -44,6 +44,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "MixingCameraExtension")
 	EMixingCameraMixRotationMethod MixRotationMethod;
 
+	/** Parameter used in the Circular rotation scheme. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "MixingCameraExtension", meta = (ClampMin = "-1.0", ClampMax = "1.0"))
+	float CircularEpsilon;
+
 private:
 	/** List of camera instances contributing to the final camera state. */
 	TArray<AECameraBase*> Cameras;
