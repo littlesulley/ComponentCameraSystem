@@ -231,14 +231,7 @@ AECameraBase* AECameraBase::SetFollowAndAimWithBlend(
 	if (bResetAimSocket)              InAimSocket    = AimSocket;
 	if (bRsetAimSceneComponent)       InASC          = AimSceneComponent;
 
-	if (this->IsA<UBlueprint>()) // @TODO: Is this correct?
-	{
-		CameraClass = Cast<UClass>(Cast<UBlueprint>(this)->GeneratedClass);
-	}
-	else
-	{
-		CameraClass = this->GetClass();
-	}
+	CameraClass = this->GetClass();
 
 	return UECameraLibrary::InternalCallCamera(
 		this,
