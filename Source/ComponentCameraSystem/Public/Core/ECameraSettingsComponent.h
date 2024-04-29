@@ -122,6 +122,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "ECamera|Settings")
 	USceneComponent* SetAimSceneComponent(USceneComponent* NewSceneComponent);
 
+	/** Get follow component of specified class. */
+	UFUNCTION(BlueprintPure, Category = "ECamera|Settings", meta = (DeterminesOutputType = "FollowClass"))
+	UECameraComponentFollow* GetFollowComponentOfClass(TSubclassOf<UECameraComponentFollow> FollowClass);
+
+	/** Get aim component of specified class. */
+	UFUNCTION(BlueprintPure, Category = "ECamera|Settings", meta = (DeterminesOutputType = "AimClass"))
+	UECameraComponentAim* GetAimComponentOfClass(TSubclassOf<UECameraComponentAim> AimClass);
+
 	/** Get extension of specified class. */
 	UFUNCTION(BlueprintPure, Category = "ECamera|Settings", meta = (DeterminesOutputType = "ExtensionClass"))
 	UECameraExtensionBase* GetExtensionOfClass(TSubclassOf<UECameraExtensionBase> ExtensionClass);

@@ -580,4 +580,39 @@ public:
 	  */
 	UFUNCTION(BlueprintCallable, Category = "ECamera|Utils", meta = (DisplayName = "EasyStopRecentering", WorldContext = "WorldContextObject"))
 	static void EasyStopRecentering(const UObject* WorldContextObject);
+
+	static FProperty* GetPropertyFromObject(UObject* Object, FName PropertyName)
+	{
+		if (!IsValid(Object))
+		{
+			return nullptr;
+		}
+
+		UClass* ObjectClass = Object->GetClass();
+		FProperty* Property = FindFProperty<FProperty>(ObjectClass, PropertyName);
+
+		if (Property != nullptr)
+		{
+			return Property;
+		}
+
+#if WITH_EDITORONLY_DATA
+		UBlueprint* Blueprint = Cast<UBlueprint>(ObjectClass->ClassGeneratedBy);
+
+		if (Blueprint == nullptr)
+		{
+			return nullptr;
+		}
+
+		Property = FindFProperty<FProperty>(Blueprint->GetClass(), PropertyName);
+		if (Property == nullptr)
+		{
+			return nullptr;
+		}
+
+		return Property;
+#else
+		return nullptr;
+#endif
+	}
 };

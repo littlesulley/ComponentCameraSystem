@@ -82,6 +82,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "ECamera|CameraBase")
 	UECameraComponentAim* GetAimComponent() { return CameraSettingsComponent != nullptr ? CameraSettingsComponent->AimComponent : nullptr; }
 
+	/** Get FollowComponent owned by this camera and cast it to a given follow component class. */
+	UFUNCTION(BlueprintCallable, Category = "ECamera|CameraBase", meta = (DeterminesOutputType = "FollowClass"))
+	UECameraComponentFollow* GetFollowComponentOfClass(TSubclassOf<UECameraComponentFollow> FollowClass) { return CameraSettingsComponent != nullptr ? CameraSettingsComponent->GetFollowComponentOfClass(FollowClass) : nullptr; }
+
+	/** Get AimComponent owned by this camera and cast it to a given aim component class. */
+	UFUNCTION(BlueprintCallable, Category = "ECamera|CameraBase", meta = (DeterminesOutputType = "AimClass"))
+	UECameraComponentAim* GetAimComponentOfClass(TSubclassOf<UECameraComponentAim> AimClass) { return CameraSettingsComponent != nullptr ? CameraSettingsComponent->GetAimComponentOfClass(AimClass) : nullptr; }
+
 	/** Get a particular extension. Return null if no such extension is found. */
 	UFUNCTION(BlueprintCallable, Category = "ECamera|CameraBase", meta = (DeterminesOutputType = "ExtensionClass"))
 	UECameraExtensionBase* GetExtensionOfClass(TSubclassOf<UECameraExtensionBase> ExtensionClass) { return CameraSettingsComponent != nullptr ? CameraSettingsComponent->GetExtensionOfClass(ExtensionClass) : nullptr; }
