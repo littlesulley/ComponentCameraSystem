@@ -99,6 +99,74 @@ public:
 	virtual void UpdateComponent_Implementation(float DeltaTime) override;
 	virtual void ResetOnBecomeViewTarget(APlayerController* PC, bool bPreserveState) override;
 
+	/** This function allows you set any property in Damp params of a FramingFollow component.
+	  * You should make sure the property name is correct and matches the value type. That is, if PropertyName is DampTime, Value should be of a Vector type.
+	  * If no such PropertyName exists or value type does not match, nothing will happen.
+	  * @param PropertyName: A property name of DampParams, e.g., DampTime, Residual, etc.
+	  * @param Value: The new value you want to set to PropertyName.
+	  */
+	UFUNCTION(BlueprintCallable, CustomThunk, Category = "FramingFollow", meta = (DisplayName = "SetPropertyInDampParams", CustomStructureParam = "Value"))
+	void SetPropertyInDampParams(FName PropertyName, const int32& Value);
+
+	DECLARE_FUNCTION(execSetPropertyInDampParams)
+	{
+		P_GET_PROPERTY(FNameProperty, PropertyName);
+
+		Stack.StepCompiledIn<FProperty>(NULL);
+		void* ValuePtr = Stack.MostRecentPropertyAddress;
+		FProperty* ValueProperty = Stack.MostRecentProperty;
+
+		P_FINISH;
+
+		P_NATIVE_BEGIN;
+		P_THIS->Generic_SetPropertyInDampParams(PropertyName, ValuePtr, ValueProperty);
+		P_NATIVE_END;
+	}
+
+	void Generic_SetPropertyInDampParams(FName PropertyName, void* ValuePtr, FProperty* ValueProperty)
+	{
+		if (!IsValid(this))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Context target (ScreenFollow component) is not valid when calling SetPropertyInDampParams"));
+			return;
+		}
+
+		// Get property of DampParams struct
+		if (FStructProperty* StructProperty = CastField<FStructProperty>(UECameraLibrary::GetPropertyFromObject(this, "DampParams")))
+		{
+			void* StructPtr = StructProperty->ContainerPtrToValuePtr<void>(this);
+			UScriptStruct* Struct = StructProperty->Struct;
+			FProperty* SrcProperty = FindFProperty<FProperty>(Struct, PropertyName);
+			void* SrcPtr = SrcProperty->ContainerPtrToValuePtr<void>(StructPtr);
+
+			if (SrcProperty == nullptr)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Cannot find property %s in DampParams."), *PropertyName.ToString());
+				return;
+			}
+
+			if (SrcProperty->SameType(ValueProperty))
+			{
+				SrcProperty->CopyCompleteValue(SrcPtr, ValuePtr);
+			}
+			else if (SrcProperty->IsA<FFloatProperty>() && ValueProperty->IsA<FDoubleProperty>())
+			{
+				CastField<FFloatProperty>(SrcProperty)->SetPropertyValue(SrcPtr, CastField<FDoubleProperty>(ValueProperty)->GetPropertyValue(ValuePtr));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("The found property %s does not has the same type as given property %s, respectively are %s and %s"),
+					*SrcProperty->NamePrivate.ToString(), *ValueProperty->NamePrivate.ToString(), *SrcProperty->GetCPPType(), *ValueProperty->GetCPPType());
+				return;
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Cannot find property DampParams in object %s."), *this->GetName());
+			return;
+		}
+	}
+
 	/** Return real follow position. */
 	FVector GetFollowPosition() { return RealFollowPosition; }
 

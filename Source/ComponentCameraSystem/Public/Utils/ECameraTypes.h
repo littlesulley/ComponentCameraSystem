@@ -32,6 +32,10 @@
 #define UE53 (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION == 3)
 #endif
 
+#ifndef UE54
+#define UE54 (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION == 4)
+#endif
+
 #ifndef LATER_THAN_UE50
 #define LATER_THAN_UE50 (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 0)
 #endif
@@ -48,6 +52,10 @@
 #define LATER_THAN_UE53 (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3)
 #endif
 
+#ifndef LATER_THAN_UE54
+#define LATER_THAN_UE54 (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 4)
+#endif
+
 #ifndef EARLIER_THAN_UE50
 #define EARLIER_THAN_UE50 ENGINE_MAJOR_VERSION < 5
 #endif
@@ -62,6 +70,10 @@
 
 #ifndef EARLIER_THAN_UE53
 #define EARLIER_THAN_UE53 (ENGINE_MAJOR_VERSION < 5 || ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION < 3)
+#endif
+
+#ifndef EARLIER_THAN_UE54
+#define EARLIER_THAN_UE54 (ENGINE_MAJOR_VERSION < 5 || ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION < 4)
 #endif
 
 /**************************************************************************************/

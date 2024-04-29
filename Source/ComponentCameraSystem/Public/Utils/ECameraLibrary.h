@@ -607,6 +607,44 @@ public:
 		P_NATIVE_END;
 	}
 
+	static FProperty* GetPropertyFromObject(UObject* Object, FName PropertyName)
+	{
+		if (!IsValid(Object))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Input Object %s is invalid when calling function GetPropertyFromObject."), *Object->GetName());
+			return nullptr;
+		}
+
+		UClass* ObjectClass = Object->GetClass();
+		FProperty* Property = FindFProperty<FProperty>(ObjectClass, PropertyName);
+
+		if (Property != nullptr)
+		{
+			return Property;
+		}
+
+#if WITH_EDITORONLY_DATA
+		UBlueprint* Blueprint = Cast<UBlueprint>(ObjectClass->ClassGeneratedBy);
+
+		if (Blueprint == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Cannot find Property %s in Object %s when calling function GetPropertyFromObject."), *PropertyName.ToString(), *Object->GetName());
+			return nullptr;
+		}
+
+		Property = FindFProperty<FProperty>(Blueprint->GetClass(), PropertyName);
+		if (Property == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Cannot find Property %s in Object %s when calling function GetPropertyFromObject."), *PropertyName.ToString(), *Object->GetName());
+			return nullptr;
+		}
+
+		return Property;
+#else
+		return nullptr;
+#endif
+	}
+
 
 public:
 	static void Generic_AccessCameraPropertyByName(UObject* OwnerObject, FName PropertyName, void* ValuePtr, FProperty* ValueProp, bool bSetter);

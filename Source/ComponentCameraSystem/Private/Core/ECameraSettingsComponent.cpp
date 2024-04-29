@@ -199,6 +199,16 @@ USceneComponent* UECameraSettingsComponent::SetAimSceneComponent(USceneComponent
 	return nullptr;
 }
 
+UECameraComponentFollow* UECameraSettingsComponent::GetFollowComponentOfClass(TSubclassOf<UECameraComponentFollow> FollowClass)
+{
+	return FollowComponent;
+}
+
+UECameraComponentAim* UECameraSettingsComponent::GetAimComponentOfClass(TSubclassOf<UECameraComponentAim> AimClass)
+{
+	return AimComponent;
+}
+
 UECameraExtensionBase* UECameraSettingsComponent::GetExtensionOfClass(TSubclassOf<UECameraExtensionBase> ExtensionClass)
 {
 	UECameraExtensionBase* Result = nullptr;
