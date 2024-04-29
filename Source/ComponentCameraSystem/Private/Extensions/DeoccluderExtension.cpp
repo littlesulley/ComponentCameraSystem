@@ -35,6 +35,12 @@ void UDeoccluderExtension::UpdateComponent_Implementation(float DeltaTime)
 	/** Cache camera location at the very beginning. */
 	CachedRawLocation = GetOwningActor()->GetActorLocation();
 
+	/** Minimal number of ObjectTypes should be zero. */
+	if (OccluderParams.ObjectTypes.Num() == 0)
+	{
+		return;
+	}
+
 	/** Get the target location to which we want to emit ray trace. */
 	FVector TargetLocation;
 
