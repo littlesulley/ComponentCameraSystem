@@ -4,7 +4,7 @@ This is the free, open-source version of the [ComponentCameraSystem](https://www
 This repo maintains all versions of Component Camera System except for the latest three Unreal versions (currently they are 5.2, 5.3 and 5.4).  
 Switch to branch v4.27/v5.0/v5.1 corresponding versions.  
 
-**Deprecated versions** will be no longer maintained.
+**Deprecated versions** will be no longer maintained except fixing bugs.
 
 Documentation at [here](https://sulleyyys-organization.gitbook.io/manuals-of-ccs/). 
 
