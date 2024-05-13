@@ -137,7 +137,6 @@ public:
 			void* StructPtr = StructProperty->ContainerPtrToValuePtr<void>(this);
 			UScriptStruct* Struct = StructProperty->Struct;
 			FProperty* SrcProperty = FindFProperty<FProperty>(Struct, PropertyName);
-			void* SrcPtr = SrcProperty->ContainerPtrToValuePtr<void>(StructPtr);
 
 			if (SrcProperty == nullptr)
 			{
@@ -145,6 +144,7 @@ public:
 				return;
 			}
 
+			void* SrcPtr = SrcProperty->ContainerPtrToValuePtr<void>(StructPtr);
 			if (SrcProperty->SameType(ValueProperty))
 			{
 				SrcProperty->CopyCompleteValue(SrcPtr, ValuePtr);

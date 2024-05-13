@@ -12,9 +12,6 @@ class USceneComponent;
 class UCameraComponent;
 class APlayerController;
 
-enum EViewTargetBlendFunction;
-
-
 /**
 * All cameras should inherit from this class ECameraBase.
 */
