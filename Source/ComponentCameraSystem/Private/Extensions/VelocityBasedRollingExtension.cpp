@@ -226,10 +226,6 @@ void UVelocityBasedRollingExtension::AsyncStartRoll(float TargetRoll, float Dura
 
 		Action = LatentActionManager.FindExistingAction<FERollDelayAction>(LatentInfo.CallbackTarget, LatentInfo.UUID);
 	}
-	else
-	{
-		Action = nullptr;
-	}
 }
 
 void UVelocityBasedRollingExtension::AsyncPauseRoll(bool bSetPause)
