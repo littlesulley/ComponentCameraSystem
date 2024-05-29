@@ -14,7 +14,6 @@ UTargetingAim::UTargetingAim()
 {
 	Stage = EStage::Aim;
 
-	bLocalRotation = false;
 	AdditionalAimOffset = FVector(0.0f, 0.0f, 0.0f);
 	DampParams = FDampParams();
 	ScreenOffset = FVector2f(0.0f, 0.0f);
@@ -42,13 +41,8 @@ void UTargetingAim::UpdateComponent_Implementation(float DeltaTime)
 		FRotator DampedDeltaRotation = DampDeltaRotation(TempDeltaRotation, DeltaTime, AimPosition);
 
 		/** Apply damped delta rotation. */
-		if (!bLocalRotation)
-		{
-			GetOwningActor()->AddActorLocalRotation(FRotator(DampedDeltaRotation.Pitch, 0, 0));
-			GetOwningActor()->AddActorWorldRotation(FRotator(0, DampedDeltaRotation.Yaw, 0));
-
-		}
-		else GetOwningActor()->AddActorLocalRotation(DampedDeltaRotation);
+		GetOwningActor()->AddActorLocalRotation(FRotator(DampedDeltaRotation.Pitch, 0, 0));
+		GetOwningActor()->AddActorWorldRotation(FRotator(0, DampedDeltaRotation.Yaw, 0));
 	}
 }
 
@@ -60,37 +54,13 @@ bool UTargetingAim::CheckIfTooClose(const FVector& AimPosition)
 
 void UTargetingAim::SetDeltaRotation(const FVector& AimPosition, FRotator& TempDeltaRotation)
 {
-	/** Version 1: Rotate at world space. */
-	if (!bLocalRotation)
-	{
-		FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetOwningActor()->GetActorLocation(), AimPosition);
-		FRotator CenteredDeltaRotation = UKismetMathLibrary::NormalizedDeltaRotator(LookAtRotation, GetOwningActor()->GetActorRotation());
+	FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetOwningActor()->GetActorLocation(), AimPosition);
+	FRotator CenteredDeltaRotation = UKismetMathLibrary::NormalizedDeltaRotator(LookAtRotation, GetOwningActor()->GetActorRotation());
 		
-		float TanHalfFOV = UKismetMathLibrary::DegTan(OwningCamera->GetCameraComponent()->FieldOfView / 2);
-		TempDeltaRotation.Yaw = CenteredDeltaRotation.Yaw - UKismetMathLibrary::DegAtan(2.0 * ScreenOffset.X * TanHalfFOV);
-		TempDeltaRotation.Pitch = CenteredDeltaRotation.Pitch - UKismetMathLibrary::DegAtan(2.0 * ScreenOffset.Y * TanHalfFOV / OwningCamera->GetCameraComponent()->AspectRatio);
-		TempDeltaRotation.Roll = 0;
-	}
-
-	/** Version 2: Rotate at local space. */
-	else
-	{
-		FVector Diff = AimPosition - GetOwningActor()->GetActorLocation();
-
-		FVector ForwardVector = GetOwningActor()->GetActorForwardVector();
-		FVector RightVector = GetOwningActor()->GetActorRightVector();
-		FVector UpVector = GetOwningActor()->GetActorUpVector();
-
-		FVector LocalSpaceAimPosition =
-			UKismetMathLibrary::MakeVector(ForwardVector.X, RightVector.X, UpVector.X) * Diff.X +
-			UKismetMathLibrary::MakeVector(ForwardVector.Y, RightVector.Y, UpVector.Y) * Diff.Y +
-			UKismetMathLibrary::MakeVector(ForwardVector.Z, RightVector.Z, UpVector.Z) * Diff.Z;
-
-		FRotator CenteredDeltaRotation = UKismetMathLibrary::NormalizedDeltaRotator(UKismetMathLibrary::FindLookAtRotation(FVector(0, 0, 0), LocalSpaceAimPosition), FRotator(0, 0, 0));
-		TempDeltaRotation.Yaw = CenteredDeltaRotation.Yaw - ScreenOffset.X * OwningCamera->GetCameraComponent()->FieldOfView;
-		TempDeltaRotation.Pitch = CenteredDeltaRotation.Pitch - ScreenOffset.Y * 2.0f * UKismetMathLibrary::DegAtan(UKismetMathLibrary::DegTan(OwningCamera->GetCameraComponent()->FieldOfView / 2) / OwningCamera->GetCameraComponent()->AspectRatio);
-		TempDeltaRotation.Roll = 0;
-	}
+	float TanHalfFOV = UKismetMathLibrary::DegTan(OwningCamera->GetCameraComponent()->FieldOfView / 2);
+	TempDeltaRotation.Yaw = CenteredDeltaRotation.Yaw - UKismetMathLibrary::DegAtan(2.0 * ScreenOffset.X * TanHalfFOV);
+	TempDeltaRotation.Pitch = CenteredDeltaRotation.Pitch - UKismetMathLibrary::DegAtan(2.0 * ScreenOffset.Y * TanHalfFOV / OwningCamera->GetCameraComponent()->AspectRatio);
+	TempDeltaRotation.Roll = 0;
 }
 
 FRotator UTargetingAim::DampDeltaRotation(const FRotator& TempDeltaRotation, float DeltaTime, const FVector& AimPosition)

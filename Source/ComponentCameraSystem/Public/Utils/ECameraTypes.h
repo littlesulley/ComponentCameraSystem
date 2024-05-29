@@ -350,6 +350,17 @@ enum class EPhotoModeResolution : uint8
 	Cinematic   UMETA(DisplayName = "Cinematic")
 };
 
+UENUM()
+enum class ELatentOutputPins : uint8
+{
+	/** Execute each tick. */
+	OnTick,
+	/** Execute when the function completes its work. */
+	OnComplete,
+	/** Execute when the function is interrupted. */
+	OnInterrupt
+};
+
 /**************************************************************************************/
 /********************************* Begin structs.**************************************/
 /**************************************************************************************/
