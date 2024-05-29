@@ -18,12 +18,8 @@ public:
 	UTargetingAim();
 
 protected:
-	/** Whether to use local space rotation. This is currently experimental, do not use it. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TargetingAim")
-	bool bLocalRotation;
-
 	/** Additional offset applied to the aim target. This can be modified by other components. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TargetingAim")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "TargetingAim")
 	FVector AdditionalAimOffset;
 
 	/** Damp parameters you want to use for damping. */
