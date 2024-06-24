@@ -27,19 +27,15 @@ void UECameraLibrary::EasyDampVectorWithSameDampTime(const FDampParams DampParam
 												     const float DeltaSeconds,       // All methods
 												     const float DampTime,           // All methods
 												     FVector& Output,                // All methods
-												     const FVector TemporalInput,    // Spring
-												     const FVector SpatialInput,     // Spring
-												     const FVector CurrentVelocity,  // ExactSpring
-												     const FVector TargetVector,     // ExactSpring
-												     const FVector TargetVelocity,   // ExactSpring
-												     FVector& OutVelocity,           // ExactSpring
+												     const FVector CurrentVelocity,  // Spring
+												     FVector& OutVelocity,           // Spring
 												     const FVector PreviousResidual, // ContinuousNaive
 													 FVector& DeltaResidual          // Lowpass
 											)
 {
-	EasyDamp(DampParams, Input[0], DeltaSeconds, DampTime, Output[0], TemporalInput[0], SpatialInput[0], DampParams.SpringCoefficient[0], CurrentVelocity[0], TargetVector[0], TargetVelocity[0], DampParams.DampRatio[0], DampParams.HalfLife[0], OutVelocity[0], PreviousResidual[0], DeltaResidual[0]);
-	EasyDamp(DampParams, Input[1], DeltaSeconds, DampTime, Output[1], TemporalInput[1], SpatialInput[1], DampParams.SpringCoefficient[1], CurrentVelocity[1], TargetVector[1], TargetVelocity[1], DampParams.DampRatio[1], DampParams.HalfLife[1], OutVelocity[1], PreviousResidual[1], DeltaResidual[1]);
-	EasyDamp(DampParams, Input[2], DeltaSeconds, DampTime, Output[2], TemporalInput[2], SpatialInput[2], DampParams.SpringCoefficient[2], CurrentVelocity[2], TargetVector[2], TargetVelocity[2], DampParams.DampRatio[2], DampParams.HalfLife[2], OutVelocity[2], PreviousResidual[2], DeltaResidual[2]);
+	EasyDamp(DampParams, Input[0], DeltaSeconds, DampTime, Output[0], DampParams.Frequency[0], DampParams.DampRatio[0], CurrentVelocity[0], OutVelocity[0], PreviousResidual[0], DeltaResidual[0]);
+	EasyDamp(DampParams, Input[1], DeltaSeconds, DampTime, Output[1], DampParams.Frequency[1], DampParams.DampRatio[1], CurrentVelocity[1], OutVelocity[1], PreviousResidual[1], DeltaResidual[1]);
+	EasyDamp(DampParams, Input[2], DeltaSeconds, DampTime, Output[2], DampParams.Frequency[2], DampParams.DampRatio[2], CurrentVelocity[2], OutVelocity[2], PreviousResidual[2], DeltaResidual[2]);
 }
 
 void UECameraLibrary::EasyDampRotatorWithSameDampTime(const FDampParams DampParams,   // All methods
@@ -47,19 +43,15 @@ void UECameraLibrary::EasyDampRotatorWithSameDampTime(const FDampParams DampPara
 												      const float DeltaSeconds,       // All methods
 												      const float DampTime,           // All methods
 												      FRotator& Output,               // All methods
-												      const FVector TemporalInput,    // Spring
-												      const FVector SpatialInput,     // Spring
-												      const FVector CurrentVelocity,  // ExactSpring
-												      const FVector TargetVector,     // ExactSpring
-												      const FVector TargetVelocity,   // ExactSpring
-												      FVector& OutVelocity,           // ExactSpring
+												      const FVector CurrentVelocity,  // Spring
+												      FVector& OutVelocity,           // Spring
 												      const FVector PreviousResidual, // ContinuousNaive
 													  FVector& DeltaResidual          // Lowpass
 											)
 {
-	EasyDamp(DampParams, Input.Roll, DeltaSeconds, DampTime, Output.Roll, TemporalInput[0], SpatialInput[0], DampParams.SpringCoefficient[0], CurrentVelocity[0], TargetVector[0], TargetVelocity[0], DampParams.DampRatio[0], DampParams.HalfLife[0], OutVelocity[0], PreviousResidual[0], DeltaResidual[0]);
-	EasyDamp(DampParams, Input.Pitch, DeltaSeconds, DampTime, Output.Pitch, TemporalInput[1], SpatialInput[1], DampParams.SpringCoefficient[1], CurrentVelocity[1], TargetVector[1], TargetVelocity[1], DampParams.DampRatio[1], DampParams.HalfLife[1], OutVelocity[1], PreviousResidual[1], DeltaResidual[1]);
-	EasyDamp(DampParams, Input.Yaw, DeltaSeconds, DampTime, Output.Yaw, TemporalInput[2], SpatialInput[2], DampParams.SpringCoefficient[2], CurrentVelocity[2], TargetVector[2], TargetVelocity[2], DampParams.DampRatio[2], DampParams.HalfLife[2], OutVelocity[2], PreviousResidual[2], DeltaResidual[2]);
+	EasyDamp(DampParams, Input.Roll, DeltaSeconds, DampTime, Output.Roll, DampParams.Frequency[0], DampParams.DampRatio[0], CurrentVelocity[0], OutVelocity[0], PreviousResidual[0], DeltaResidual[0]);
+	EasyDamp(DampParams, Input.Pitch, DeltaSeconds, DampTime, Output.Pitch, DampParams.Frequency[1], DampParams.DampRatio[1], CurrentVelocity[1], OutVelocity[1], PreviousResidual[1], DeltaResidual[1]);
+	EasyDamp(DampParams, Input.Yaw, DeltaSeconds, DampTime, Output.Yaw, DampParams.Frequency[2], DampParams.DampRatio[2], CurrentVelocity[2], OutVelocity[2], PreviousResidual[2], DeltaResidual[2]);
 }
 
 void UECameraLibrary::EasyDampVectorWithDifferentDampTime(const FDampParams DampParams,   // All methods
@@ -67,19 +59,15 @@ void UECameraLibrary::EasyDampVectorWithDifferentDampTime(const FDampParams Damp
 														  const float DeltaSeconds,       // All methods
 														  const FVector DampTime,         // All methods
 														  FVector& Output,                // All methods
-														  const FVector TemporalInput,    // Spring
-														  const FVector SpatialInput,     // Spring
-														  const FVector CurrentVelocity,  // ExactSpring
-														  const FVector TargetVector,     // ExactSpring
-														  const FVector TargetVelocity,   // ExactSpring
-														  FVector& OutVelocity,           // ExactSpring
+														  const FVector CurrentVelocity,  // Spring
+														  FVector& OutVelocity,           // Spring
 														  const FVector PreviousResidual, // ContinuousNaive
 													      FVector& DeltaResidual          // Lowpass
 												)
 {
-	EasyDamp(DampParams, Input[0], DeltaSeconds, DampTime[0], Output[0], TemporalInput[0], SpatialInput[0], DampParams.SpringCoefficient[0], CurrentVelocity[0], TargetVector[0], TargetVelocity[0], DampParams.DampRatio[0], DampParams.HalfLife[0], OutVelocity[0], PreviousResidual[0], DeltaResidual[0]);
-	EasyDamp(DampParams, Input[1], DeltaSeconds, DampTime[1], Output[1], TemporalInput[1], SpatialInput[1], DampParams.SpringCoefficient[1], CurrentVelocity[1], TargetVector[1], TargetVelocity[1], DampParams.DampRatio[1], DampParams.HalfLife[1], OutVelocity[1], PreviousResidual[1], DeltaResidual[1]);
-	EasyDamp(DampParams, Input[2], DeltaSeconds, DampTime[2], Output[2], TemporalInput[2], SpatialInput[2], DampParams.SpringCoefficient[2], CurrentVelocity[2], TargetVector[2], TargetVelocity[2], DampParams.DampRatio[2], DampParams.HalfLife[2], OutVelocity[2], PreviousResidual[2], DeltaResidual[2]);
+	EasyDamp(DampParams, Input[0], DeltaSeconds, DampTime[0], Output[0], DampParams.Frequency[0], DampParams.DampRatio[0], CurrentVelocity[0], OutVelocity[0], PreviousResidual[0], DeltaResidual[0]);
+	EasyDamp(DampParams, Input[1], DeltaSeconds, DampTime[1], Output[1], DampParams.Frequency[1], DampParams.DampRatio[1], CurrentVelocity[1], OutVelocity[1], PreviousResidual[1], DeltaResidual[1]);
+	EasyDamp(DampParams, Input[2], DeltaSeconds, DampTime[2], Output[2], DampParams.Frequency[2], DampParams.DampRatio[2], CurrentVelocity[2], OutVelocity[2], PreviousResidual[2], DeltaResidual[2]);
 }
 
 void UECameraLibrary::EasyDampRotatorWithDifferentDampTime(const FDampParams DampParams,  // All methods
@@ -87,19 +75,15 @@ void UECameraLibrary::EasyDampRotatorWithDifferentDampTime(const FDampParams Dam
 														  const float DeltaSeconds,       // All methods
 														  const FVector DampTime,         // All methods
 														  FRotator& Output,               // All methods
-														  const FVector TemporalInput,    // Spring
-														  const FVector SpatialInput,     // Spring
-														  const FVector CurrentVelocity,  // ExactSpring
-														  const FVector TargetVector,     // ExactSpring
-														  const FVector TargetVelocity,   // ExactSpring
-														  FVector& OutVelocity,           // ExactSpring
+														  const FVector CurrentVelocity,  // Spring
+														  FVector& OutVelocity,           // Spring
 														  const FVector PreviousResidual, // ContinuousNaive
 													      FVector& DeltaResidual          // Lowpass
 												)
 {
-	EasyDamp(DampParams, Input.Roll, DeltaSeconds, DampTime[0], Output.Roll, TemporalInput[0], SpatialInput[0], DampParams.SpringCoefficient[0], CurrentVelocity[0], TargetVector[0], TargetVelocity[0], DampParams.DampRatio[0], DampParams.HalfLife[0], OutVelocity[0], PreviousResidual[0], DeltaResidual[0]);
-	EasyDamp(DampParams, Input.Pitch, DeltaSeconds, DampTime[1], Output.Pitch, TemporalInput[1], SpatialInput[1], DampParams.SpringCoefficient[1], CurrentVelocity[1], TargetVector[1], TargetVelocity[1], DampParams.DampRatio[1], DampParams.HalfLife[1], OutVelocity[1], PreviousResidual[1], DeltaResidual[1]);
-	EasyDamp(DampParams, Input.Yaw, DeltaSeconds, DampTime[2], Output.Yaw, TemporalInput[2], SpatialInput[2], DampParams.SpringCoefficient[2], CurrentVelocity[2], TargetVector[2], TargetVelocity[2], DampParams.DampRatio[2], DampParams.HalfLife[2], OutVelocity[2], PreviousResidual[2], DeltaResidual[2]);
+	EasyDamp(DampParams, Input.Roll, DeltaSeconds, DampTime[0], Output.Roll, DampParams.Frequency[0], DampParams.DampRatio[0], CurrentVelocity[0], OutVelocity[0], PreviousResidual[0], DeltaResidual[0]);
+	EasyDamp(DampParams, Input.Pitch, DeltaSeconds, DampTime[1], Output.Pitch, DampParams.Frequency[1], DampParams.DampRatio[1], CurrentVelocity[1], OutVelocity[1], PreviousResidual[1], DeltaResidual[1]);
+	EasyDamp(DampParams, Input.Yaw, DeltaSeconds, DampTime[2], Output.Yaw, DampParams.Frequency[2], DampParams.DampRatio[2], CurrentVelocity[2], OutVelocity[2], PreviousResidual[2], DeltaResidual[2]);
 }
 
 void UECameraLibrary::EasyDamp(const FDampParams DampParams,   // All methods
@@ -107,15 +91,10 @@ void UECameraLibrary::EasyDamp(const FDampParams DampParams,   // All methods
 							   const float DeltaSeconds,       // All methods
 							   const float DampTime,           // All methods
 							   double& Output,                 // All methods
-							   const float TemporalInput,      // Spring
-	                           const float SpatialInput,       // Spring
-							   const float SpringCoefficient,  // Spring
-							   const float CurrentVelocity,    // ExactSpring
-							   const float TargetValue,        // ExactSpring
-							   const float TargetVelocity,     // ExactSpring
-							   const float DampRatio,          // ExactSpring
-							   const float HalfLife,           // ExactSpring
-							   double& OutVelocity,            // ExactSpring
+							   const float Frequency,		   // Spring
+	                           const float DampRatio,          // Spring
+							   const float CurrentVelocity,    // Spring
+							   double& OutVelocity,            // Spring
 							   const float PreviousResidual,   // ContinuousNaive
 							   double& DeltaResidual           // LowPass
 						)
@@ -134,12 +113,7 @@ void UECameraLibrary::EasyDamp(const FDampParams DampParams,   // All methods
 		break;
 		case EDampMethod::Spring:
 		{
-			SpringDampValue(DampParams.MaxDeltaSeconds, SpringCoefficient, DampParams.SpringResidual, DeltaSeconds, TemporalInput, SpatialInput, Output);
-		}
-		break;
-		case EDampMethod::ExactSpring:
-		{
-			ExactSpringDamperValue(0.0, CurrentVelocity, TargetValue, TargetVelocity, DampRatio, HalfLife, DeltaSeconds, Output, OutVelocity);
+			SpringDampValue(Frequency, DampRatio, CurrentVelocity, OutVelocity, DeltaSeconds, Input, Output);
 		}
 		break;
 		case EDampMethod::ContinuousNaive:
@@ -223,105 +197,57 @@ void UECameraLibrary::DamperRotatorWithDifferentDampTime(const FDampParams& Damp
 	DamperValue(DampParams, DeltaSeconds, Input.Yaw, DampTime.Z, Output.Yaw);
 }
 
-/** 
-* @TODO: This function needs to be improved for more stable behaviour. 
-*/
-void UECameraLibrary::SpringDampVector(const FDampParams& DampParams, const float& DeltaSeconds, const FVector& TemporalInput, const FVector& SpatialInput, FVector& Output)
+void UECameraLibrary::SpringDampValue(const float& Frequency, const float& DampRatio, const float& CurrentVelocity, double& OutVelocity, const float& DeltaSeconds, const float& Input, double& Output)
 {
-	FVector SpatialDelta = SpatialInput;
-	FVector TemporalDelta = TemporalInput;
-
-	FVector Acceleration;
-	float RemainingTime = DeltaSeconds; 
-	Output = FVector(0, 0, 0);
-	while (RemainingTime > UE_KINDA_SMALL_NUMBER)
+	// Underdamped
+	if (DampRatio < 1)
 	{
-		const float DampTime = FMath::Min(DampParams.MaxDeltaSeconds, RemainingTime);
-		Acceleration = DampParams.SpringCoefficient * SpatialDelta;
-		TemporalDelta = (1 - DampParams.SpringResidual) * TemporalDelta + DampTime * DampTime * Acceleration;
-		SpatialDelta -= TemporalDelta;
-		Output += TemporalDelta;
-		RemainingTime -= DampTime;
+		float SqrtOfOneMinusSquare = FMath::Sqrt(1.0 - DampRatio * DampRatio);
+		float OmegaDotSqrt = Frequency * SqrtOfOneMinusSquare;
+		float Inner = OmegaDotSqrt * DeltaSeconds;
+		float OmegaDotZeta = Frequency * DampRatio;
+		float Cosine = FMath::Cos(Inner);
+		float Sine = FMath::Sin(Inner);
+
+		float C1 = Input;
+		float C2 = (CurrentVelocity + OmegaDotZeta * Input) / (OmegaDotSqrt + 1e-5f);
+		float Decay = FMath::Exp(-OmegaDotZeta * DeltaSeconds);
+		float X = C1 * Decay * Cosine + C2 * Decay * Sine;
+		OutVelocity = -OmegaDotZeta * X + (CurrentVelocity + OmegaDotZeta * Input) * Decay * Cosine - Input * OmegaDotSqrt * Decay * Sine;
+		Output = Input - X;
 	}
-}
-
-void UECameraLibrary::SpringDampValue(const float& MaxDeltaSeconds, const float& SpringCoefficient, const float& SpringResidual, const float& DeltaSeconds, const float& TemporalInput, const float& SpatialInput, double& Output)
-{
-	float SpatialDelta = SpatialInput;
-	float TemporalDelta = TemporalInput;
-
-	float Acceleration;
-	float RemainingTime = DeltaSeconds;
-	Output = 0.0f;
-	while (RemainingTime > UE_KINDA_SMALL_NUMBER)
-	{
-		const float DampTime = FMath::Min(MaxDeltaSeconds, RemainingTime);
-		Acceleration = SpringCoefficient * SpatialDelta;
-		TemporalDelta = (1 - SpringResidual) * TemporalDelta + DampTime * DampTime * Acceleration;
-		SpatialDelta -= TemporalDelta;
-		Output += TemporalDelta;
-		RemainingTime -= DampTime;
-	}
-}
-
-void UECameraLibrary::ExactSpringDamperVector(const FVector& CurrentVector, const FVector& CurrentVelocity, const FVector& TargetVector, const FVector& TargetVelocity, FVector DampRatio, FVector HalfLife, const float& DeltaSeconds, FVector& OutVector, FVector& OutVelocity)
-{
-	ExactSpringDamperValue(CurrentVector[0], CurrentVelocity[0], TargetVector[0], TargetVelocity[0], DampRatio[0], HalfLife[0], DeltaSeconds, OutVector[0], OutVelocity[0]);
-	ExactSpringDamperValue(CurrentVector[1], CurrentVelocity[1], TargetVector[1], TargetVelocity[1], DampRatio[1], HalfLife[1], DeltaSeconds, OutVector[1], OutVelocity[1]);
-	ExactSpringDamperValue(CurrentVector[2], CurrentVelocity[2], TargetVector[2], TargetVelocity[2], DampRatio[2], HalfLife[2], DeltaSeconds, OutVector[2], OutVelocity[2]);
-}
-
-void UECameraLibrary::ExactSpringDamperValue(const double& CurrentValue, const double& CurrentVelocity, const float& TargetValue, const float& TargetVelocity, float DampRatio, float HalfLife, const float& DeltaSeconds, double& OutValue, double& OutVelocity)
-{
-	float G = TargetValue;
-	float Q = TargetVelocity;
-	float D = (4.0f * 0.69314718056f) / (HalfLife + 1e-8f);
-	float S = FMath::Square<float>(D / (DampRatio * 2.0f));
-	float C = G + (D * Q) / (S + 1e-8f);
-	float Y = D / 2.0f;
-
 	// Critically damped
-	if (FMath::Abs(S - D * D / 4.0f) < 1e-5f)
+	else if (DampRatio == 1)
 	{
-		float J0 = CurrentValue - C;
-		float J1 = CurrentVelocity + J0 * Y;
-
-		float YDt = Y * DeltaSeconds;
-		float E = 1.0f / (1.0f + YDt + 0.48f * YDt * YDt + 0.235f * YDt * YDt * YDt);
-
-		OutValue = J0 * E + DeltaSeconds * J1 * E + C;
-		OutVelocity = -Y * J0 * E - Y * DeltaSeconds * J1 * E + J1 * E;
+		float X = Input * FMath::Exp(-Frequency * DeltaSeconds);
+		OutVelocity = -Frequency * X;
+		Output = Input - X;
 	}
-	// Under damped
-	else if (S - D * D / 4.0f > 0.0f)
+	// Overdamped
+	else if (DampRatio > 1)
 	{
-		float W = FMath::Sqrt(S - D * D / 4.0f);
-		float J = FMath::Sqrt(FMath::Square<float>(CurrentVelocity + Y * (CurrentValue - C)) / (W * W + 1e-8f) + FMath::Square<float>(CurrentValue - C));
-		float P = FastAtan((CurrentVelocity + (CurrentValue - C) * Y) / (-(CurrentValue - C) * W + 1e-8f));
+		float SqrtOfSquareMinusOne = FMath::Sqrt(DampRatio * DampRatio - 1.0);
+		float ZetaPlusSqrt = DampRatio + SqrtOfSquareMinusOne;
+		float ZetaMinusSqrt = DampRatio - SqrtOfSquareMinusOne;
+		float NegOmegaDotPlus = -Frequency * ZetaPlusSqrt;
+		float NegOmegaDotMinus = -Frequency * ZetaMinusSqrt;
 
-		J = (CurrentValue - C) > 0.0f ? J : -J;
-
-		float YDt = Y * DeltaSeconds;
-		float E = 1.0f / (1.0f + YDt + 0.48f * YDt * YDt + 0.235f * YDt * YDt * YDt);
-
-		OutValue = J * E * FMath::Cos(W * DeltaSeconds + P) + C;
-		OutVelocity = -Y * J * E * FMath::Cos(W * DeltaSeconds + P) - W * J * E * FMath::Sin(W * DeltaSeconds + P);
+		float C1 = (-CurrentVelocity / Frequency - ZetaMinusSqrt * Input) / (2.0 * SqrtOfSquareMinusOne + 1e-5f);
+		float C2 = Input - C1;
+		float T1 = C1 * FMath::Exp(DeltaSeconds * NegOmegaDotPlus);
+		float T2 = C2 * FMath::Exp(DeltaSeconds * NegOmegaDotMinus);
+		float X = T1 + T2;
+		OutVelocity = NegOmegaDotPlus * T1 + NegOmegaDotMinus * T2;
+		Output = Input - X;
 	}
-	// Over damped
-	else if (S - D * D / 4.0f < 0.0f)
+	// Undamped
+	else
 	{
-		float Y0 = (D + FMath::Sqrt(D * D - 4.0f * S)) / 2.0f;
-		float Y1 = (D - FMath::Sqrt(D * D - 4.0f * S)) / 2.0f;
-		float J1 = (C * Y0 - CurrentValue * Y0 - CurrentVelocity) / (Y1 - Y0);
-		float J0 = CurrentValue - J1 - C;
-
-		float Y0Dt = Y0 * DeltaSeconds;
-		float Y1Dt = Y1 * DeltaSeconds;
-		float E0 = 1.0f / (1.0f + Y0Dt + 0.48f * Y0Dt * Y0Dt + 0.235f * Y0Dt * Y0Dt * Y0Dt);
-		float E1 = 1.0f / (1.0f + Y1Dt + 0.48f * Y1Dt * Y1Dt + 0.235f * Y1Dt * Y1Dt * Y1Dt);
-
-		OutValue = J0 * E0 + J1 * E1 + C;
-		OutVelocity = -Y0 * J0 * E0 - Y1 * J1 * E1;
+		float Cosine = FMath::Cos(Frequency * DeltaSeconds);
+		float Sine = FMath::Sin(Frequency * DeltaSeconds);
+		float X = CurrentVelocity / Frequency * Sine + Input * Cosine;
+		OutVelocity = CurrentVelocity * Cosine - Frequency * Input * Sine;
+		Output = Input - X;
 	}
 }
 

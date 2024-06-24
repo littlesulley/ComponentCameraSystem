@@ -17,8 +17,7 @@ UOrbitFollow::UOrbitFollow()
 	
 	DeltaResidual = FVector(0.0f, 0.0f, 0.0f);
 	PreviousResidual = FVector(0, 0, 0);
-	PreviousLocation = FVector(0, 0, 0);
-	ExactSpringVel = FVector(0.0f, 0.0f, 0.0f);
+	SpringVelocity = FVector(0.0f, 0.0f, 0.0f);
 
 	CurrentRootPosition = FVector(0, 0, 0);
 	CachedRootPosition = FVector(0, 0, 0);
@@ -44,8 +43,7 @@ void UOrbitFollow::UpdateComponent_Implementation(float DeltaTime)
 		FVector TempDeltaPosition = LocalSpaceFollowPosition;
 
 		/** Get damped delta position. */
-		FVector SpringTemporalInput = LocalSpaceFollowPosition - PreviousLocation;
-		FVector DampedDeltaPosition = DampDeltaPosition(TempDeltaPosition, SpringTemporalInput, DeltaTime);
+		FVector DampedDeltaPosition = DampDeltaPosition(TempDeltaPosition, DeltaTime);
 
 		/** Transform DampedDeltaPosition from local space to world space.  */
 		DampedDeltaPosition = UKismetMathLibrary::TransformDirection(FTransform(GetOwningActor()->GetActorRotation(), CurrentRootPosition, FVector::OneVector), DampedDeltaPosition);
@@ -53,9 +51,6 @@ void UOrbitFollow::UpdateComponent_Implementation(float DeltaTime)
 		/** Update cache root position and current root position. */
 		CachedRootPosition = CurrentRootPosition;
 		CurrentRootPosition += DampedDeltaPosition;
-
-		/** Update previous location. */
-		PreviousLocation = UECameraLibrary::GetLocalSpacePositionWithVectors(CurrentRootPosition, GetOwningActor()->GetActorForwardVector(), GetOwningActor()->GetActorRightVector(), GetOwningActor()->GetActorUpVector(), FollowPosition);
 
 		/** If the aim component is not ControlAim, only follows the target. */
 		UControlAim* ControlAimComponent = Cast<UControlAim>(GetOwningSettingComponent()->GetAimComponent());
@@ -107,11 +102,10 @@ void UOrbitFollow::ResetOnBecomeViewTarget(APlayerController* PC, bool bPreserve
 
 	DeltaResidual = FVector(0, 0, 0);
 	PreviousResidual = FVector(0, 0, 0);
-	PreviousLocation = FVector(0, 0, 0);
-	ExactSpringVel = FVector(0.0f, 0.0f, 0.0f);
+	SpringVelocity = FVector(0.0f, 0.0f, 0.0f);
 }
 
-FVector UOrbitFollow::DampDeltaPosition(const FVector& TempDeltaPosition, const FVector& SpringTemporalInput, float DeltaTime)
+FVector UOrbitFollow::DampDeltaPosition(const FVector& TempDeltaPosition, float DeltaTime)
 {
 	FVector DampedDeltaPosition = FVector(0, 0, 0);
 
@@ -121,12 +115,8 @@ FVector UOrbitFollow::DampDeltaPosition(const FVector& TempDeltaPosition, const 
 		DeltaTime,
 		DampParams.DampTime,
 		DampedDeltaPosition,
-		SpringTemporalInput,
-		TempDeltaPosition,
-		ExactSpringVel,
-		TempDeltaPosition,
-		UKismetMathLibrary::InverseTransformDirection(GetOwningActor()->GetActorTransform(), FollowTarget->GetVelocity()) / 1.1f,
-		ExactSpringVel,
+		SpringVelocity,
+		SpringVelocity,
 		PreviousResidual,
 		DeltaResidual
 	);

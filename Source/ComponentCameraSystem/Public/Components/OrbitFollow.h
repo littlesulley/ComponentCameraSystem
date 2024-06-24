@@ -46,10 +46,8 @@ protected:
 	FVector DeltaResidual;
 	/** Previous camera residual. For some damping algorithms. */
 	FVector PreviousResidual;
-	/** Location at previous frame. Used for Spring damp. */
-	FVector PreviousLocation;
 	/** Exact spring velocity. */
-	FVector ExactSpringVel;
+	FVector SpringVelocity;
 	/** Current camera root position. */
 	FVector CurrentRootPosition;
 	/** Cached camera root position. Used for spring damping. */
@@ -69,7 +67,7 @@ public:
 	TArray<FOrbit>& GetOrbits() { return Orbits; }
 
 	/** Get damped delta position. */
-	FVector DampDeltaPosition(const FVector& TempDeltaPosition, const FVector& SpringTemporalInput, float DeltaTime);
+	FVector DampDeltaPosition(const FVector& TempDeltaPosition, float DeltaTime);
 
 	/** Update height according to input DeltaY. */
 	void UpdateHeight(UControlAim* ControlAimComponent);

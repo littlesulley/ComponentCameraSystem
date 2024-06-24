@@ -36,8 +36,7 @@ UScreenFollow::UScreenFollow()
 	ScreenOffsetHeight = FVector2f(-0.1f, 0.1f);
 	DeltaResidual = FVector(0.0f, 0.0f, 0.0f);
 	PreviousResidual = FVector(0.0f, 0.0f, 0.0f);
-	PreviousLocation = FVector(0.0f, 0.0f, 0.0f);
-	ExactSpringVel = FVector(0.0f, 0.0f, 0.0f);
+	SpringVelocity = FVector(0.0f, 0.0f, 0.0f);
 	CachedZoomValue = 0.0f;
 }
 
@@ -105,15 +104,13 @@ void UScreenFollow::UpdateComponent_Implementation(float DeltaTime)
 		SetYZPlaneDelta(LocalSpaceFollowPosition, TempDeltaPosition, RealScreenOffset, CurrentCameraDistance);
 
 		/** Get damped delta position. */
-		FVector SpringTemporalInput = (LocalSpaceFollowPosition - FVector(CurrentCameraDistance, 0, 0)) - PreviousLocation;
-		FVector DampedDeltaPosition = DampDeltaPosition(LocalSpaceFollowPosition, SpringTemporalInput, TempDeltaPosition, DeltaTime, RealScreenOffset);
+		FVector DampedDeltaPosition = DampDeltaPosition(LocalSpaceFollowPosition, TempDeltaPosition, DeltaTime, RealScreenOffset);
 
 		/** Apply damped delta position. */
 		GetOwningActor()->AddActorLocalOffset(DampedDeltaPosition);
 
 		/** Cache current position, in local space. */
 		LocalSpaceFollowPosition = UECameraLibrary::GetLocalSpacePosition(GetOwningActor(), FollowPosition);
-		PreviousLocation = LocalSpaceFollowPosition - FVector(CurrentCameraDistance, 0, 0);
 
 		/** Check if adapting to movement. */
 		if (bAdaptToMovement && !HasControlAimInput())
@@ -140,8 +137,7 @@ void UScreenFollow::ResetOnBecomeViewTarget(APlayerController* PC, bool bPreserv
 
 	DeltaResidual = FVector(0, 0, 0);
 	PreviousResidual = FVector(0.0f, 0.0f, 0.0f);
-	PreviousLocation = FVector(0.0f, 0.0f, 0.0f);
-	ExactSpringVel = FVector(0.0f, 0.0f, 0.0f);
+	SpringVelocity = FVector(0.0f, 0.0f, 0.0f);
 	CachedZoomValue = 0.0f;
 
 	Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetOwningSettingComponent()->GetPlayerController()->GetLocalPlayer());
@@ -184,7 +180,7 @@ void UScreenFollow::SetYZPlaneDelta(const FVector& LocalSpaceFollowPosition, FVe
 	TempDeltaPosition.Z = LocalSpaceFollowPosition.Z - ExpectedPositionZ;
 }
 
-FVector UScreenFollow::DampDeltaPosition(const FVector& LocalSpaceFollowPosition, const FVector& SpringTemporalInput, const FVector& TempDeltaPosition, float DeltaTime, const FVector2f& RealScreenOffset)
+FVector UScreenFollow::DampDeltaPosition(const FVector& LocalSpaceFollowPosition, const FVector& TempDeltaPosition, float DeltaTime, const FVector2f& RealScreenOffset)
 {
 	FVector DampedDeltaPosition = FVector(0, 0, 0);
 
@@ -194,12 +190,8 @@ FVector UScreenFollow::DampDeltaPosition(const FVector& LocalSpaceFollowPosition
 		DeltaTime,
 		DampParams.DampTime,
 		DampedDeltaPosition,
-		SpringTemporalInput,
-		TempDeltaPosition,
-		ExactSpringVel,
-		TempDeltaPosition,
-		UKismetMathLibrary::InverseTransformDirection(GetOwningActor()->GetActorTransform(), FollowTarget->GetVelocity()) / 1.1f,
-		ExactSpringVel,
+		SpringVelocity,
+		SpringVelocity,
 		PreviousResidual,
 		DeltaResidual
 	);

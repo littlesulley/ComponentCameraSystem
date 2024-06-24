@@ -166,10 +166,8 @@ enum class EDampMethod : uint8
 	LowPassNaive,
 	/** Splits the given deltaTime into several parts and simulates naive damping in order. */
 	Simulate,
-	/** Uses spring to damp. */
-	Spring,
-	/** Uses exact spring damper. */
-	ExactSpring
+	/** Uses spring to damp. Reference https://sulley.cc/2024/06/18/20/06/. */
+	Spring
 };
 
 /**
@@ -621,21 +619,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::ContinuousNaive", ClampMin = "1", ClampMax = "7"))
 	int Order;
 
-	/** Used for Spring. The spring coefficient controlling how responsive the actor gets back to its rest place. In the order of X, Y and Z axis. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::Spring", ClampMin = "0.0", ClampMax = "1000.0"))
-	FVector SpringCoefficient;
+	/** Used for Spring. Controls the frequency of oscillation and the speed of decay.  */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::Spring", ClampMin = "0.0001"))
+	FVector Frequency;
 
-	/** Used for Spring. Damp residual after damp time. A larger value leads to a more damp-like effect. A small SpringCoefficient (~150) with a large SpringResidual (~0.95) produces a relaxing spring.*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::Spring", ClampMin = "0.0", ClampMax = "1.0"))
-	float SpringResidual;
-
-	/** Used for Exact Spring. A value of 1 means a critically damped spring, a value <1 means an under-damped spring, and a value of >1 means a over-damped spring. Cannot be negative. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::ExactSpring", ClampMin = "0.001", ClampMax = "5.0"))
+	/** Used for Spring. Damp ratio, controlling whether the spring is undamped (=0), underdamped (<1), critically damped (=1), or overdamped (>1). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::Spring", ClampMin = "0"))
 	FVector DampRatio;
-		
-	/** Used for Exact Spring. Duration of time used to damp the input value. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::ExactSpring", ClampMin = "0.0"))
-	FVector HalfLife;
 
 	/** Used for RestrictedNaive and SoftRestrictedNaive. Tolerance of restriction range. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::RestrictedNaive || DampMethod == EDampMethod::SoftRestrictedNaive || DampMethod == EDampMethod::LowPassNaive", ClampMin = "0.0"))
@@ -649,21 +639,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::LowPassNaive", ClampMin = "0.0", ClampMax = "1.0"))
 	float LowpassBeta;
 
-	float MaxDeltaSeconds;
-
 	FDampParams()
 		: DampMethod(EDampMethod::Naive)
 		, DampTime(FVector(0.2f, 0.2f, 0.2f))
 		, Residual(0.01f)
 		, Order(3)
-		, SpringCoefficient(FVector(200.0f, 250.0f, 250.0f))
-		, SpringResidual(0.5f)
+		, Frequency(3.1415926f)
 		, DampRatio(1.0f)
-		, HalfLife(0.5f)
 		, Tolerance(0.1f)
 		, Power(3.0f)
 		, LowpassBeta(0.001f)
-		, MaxDeltaSeconds(1 / 60.0f)
 	{ }
 
 	FDampParams(EDampMethod DampMethod, float Residual)
@@ -671,14 +656,11 @@ public:
 		, DampTime(FVector(0.2f, 0.2f, 0.2f))
 		, Residual(Residual)
 		, Order(3)
-		, SpringCoefficient(FVector(300.0f, 250.0f, 250.0f))
-		, SpringResidual(0.5f)
+		, Frequency(3.1415926f)
 		, DampRatio(1.0f)
-		, HalfLife(0.5f)
 		, Tolerance(0.1f)
 		, Power(3.0f)
 		, LowpassBeta(0.001f)
-		, MaxDeltaSeconds(1 / 60.0f)
 	{ }
 };
 

@@ -82,10 +82,8 @@ protected:
 	FVector DeltaResidual;
 	/** Previous camera residual. For some damping algorithms. */
 	FVector PreviousResidual;
-	/** Location at previous frame. Used for Spring damp. */
-	FVector PreviousLocation;
 	/** Velocity for exact spring. */
-	FVector ExactSpringVel;
+	FVector SpringVelocity;
 	/** Cached ControlAim component. */
 	UControlAim* ControlAim;
 	/** Current camera distance. */
@@ -195,7 +193,7 @@ public:
 	void SetYZPlaneDelta(const FVector& LocalSpaceFollowPosition, FVector& TempDeltaPosition, const FVector2f& RealScreenOffset, float RealCameraDistance);
 
 	/** Damp temporary delta position. */
-	FVector DampDeltaPosition(const FVector& LocalSpaceFollowPosition, const FVector& SpringTemporalInput, const FVector& TempDeltaPosition, float DeltaTime, const FVector2f& RealScreenOffset);
+	FVector DampDeltaPosition(const FVector& LocalSpaceFollowPosition, const FVector& TempDeltaPosition, float DeltaTime, const FVector2f& RealScreenOffset);
 
 	/** Ensure after damping, the follow target will be within the bound. */
 	void EnsureWithinBounds(const FVector& LocalSpaceFollowPosition, FVector& DampedDeltaPosition, const FVector2f& RealScreenOffset, float RealCameraDistance);

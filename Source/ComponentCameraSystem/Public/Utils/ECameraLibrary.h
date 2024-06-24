@@ -31,12 +31,8 @@ public:
 	 * @param (All) DeltaSeconds - The elapsed time since last frame.
 	 * @param (All) DampTime - Damp time. Will override DampParams.DampTime.
 	 * @param (All) Output - Resulting damped output vector.
-	 * @param (Spring) TemporalInput - Camera `current position` - `previous position`
-	 * @param (Spring) SpatialInput - Camera `desired position` - `current position`
-	 * @param (ExactSpring) CurrentVelocity - Input vector representing current velocity.
-	 * @param (ExactSpring) TargetVector - Input vector representing target property, e.g., position.
-	 * @param (ExactSpring) TargetVelocity - Input vector representing target velocity.
-	 * @param (ExactSpring) OutVelocity - Ouput velocity.
+	 * @param (Spring) CurrentVelocity - Current frame's velocity.
+	 * @param (Spring) OutVelocity - Next frame's velocity.
 	 * @param (ContinuousNaive) PreviousResidual - Camera residuals at the previous frame.
 	 * @param (LowPass) DeltaResidual - Residual difference between this frame and previous frame.
 	 */
@@ -46,12 +42,8 @@ public:
 											   const float DeltaSeconds,       // All methods
 											   const float DampTime,           // All methods
 											   FVector& Output,                // All methods
-											   const FVector TemporalInput,    // Spring
-											   const FVector SpatialInput,     // Spring
-											   const FVector CurrentVelocity,  // ExactSpring
-										       const FVector TargetVector,     // ExactSpring
-											   const FVector TargetVelocity,   // ExactSpring
-											   FVector& OutVelocity,           // ExactSpring
+											   const FVector CurrentVelocity,  // Spring
+											   FVector& OutVelocity,           // Spring
 											   const FVector PreviousResidual, // ContinuousNaive
 											   FVector& DeltaResidual          // LowPass
 											);
@@ -62,12 +54,8 @@ public:
 	 * @param (All) DeltaSeconds - The elapsed time since last frame.
 	 * @param (All) DampTime - Damp time. Will override DampParams.DampTime.
 	 * @param (All) Output - Resulting damped output rotator.
-	 * @param (Spring) TemporalInput - Camera `current position` - `previous position`
-	 * @param (Spring) SpatialInput - Camera `desired position` - `current position`
-	 * @param (ExactSpring) CurrentVelocity - Input vector representing current velocity.
-	 * @param (ExactSpring) TargetVector - Input vector representing target property, e.g., position.
-	 * @param (ExactSpring) TargetVelocity - Input vector representing target velocity.
-	 * @param (ExactSpring) OutVelocity - Ouput velocity.
+	 * @param (Spring) CurrentVelocity - Current frame's velocity.
+	 * @param (Spring) OutVelocity - Next frame's velocity.
 	 * @param (ContinuousNaive) PreviousResidual - Camera residuals at the previous frame.
 	 * @param (LowPass) DeltaResidual - Residual difference between this frame and previous frame.
 	 */
@@ -77,12 +65,8 @@ public:
 											    const float DeltaSeconds,       // All methods
 											    const float DampTime,           // All methods
 											    FRotator& Output,               // All methods
-											    const FVector TemporalInput,    // Spring
-											    const FVector SpatialInput,     // Spring
-											    const FVector CurrentVelocity,  // ExactSpring
-											    const FVector TargetVector,     // ExactSpring
-											    const FVector TargetVelocity,   // ExactSpring
-											    FVector& OutVelocity,           // ExactSpring
+												const FVector CurrentVelocity,  // Spring
+												FVector& OutVelocity,           // Spring
 											    const FVector PreviousResidual, // ContinuousNaive
 												FVector& DeltaResidual          // LowPass
 										);
@@ -93,12 +77,8 @@ public:
 	 * @param (All) DeltaSeconds - The elapsed time since last frame.
 	 * @param (All) DampTime - Damp time. Will override DampParams.DampTime.
 	 * @param (All) Output - Resulting damped output vector.
-	 * @param (Spring) TemporalInput - Camera `current position` - `previous position`
-	 * @param (Spring) SpatialInput - Camera `desired position` - `current position`
-	 * @param (ExactSpring) CurrentVelocity - Input vector representing current velocity.
-	 * @param (ExactSpring) TargetVector - Input vector representing target property, e.g., position.
-	 * @param (ExactSpring) TargetVelocity - Input vector representing target velocity.
-	 * @param (ExactSpring) OutVelocity - Ouput velocity.
+	 * @param (Spring) CurrentVelocity - Current frame's velocity.
+	 * @param (Spring) OutVelocity - Next frame's velocity.
 	 * @param (ContinuousNaive) PreviousResidual - Camera residuals at the previous frame.
 	 * @param (LowPass) DeltaResidual - Residual difference between this frame and previous frame.
 	 */
@@ -108,12 +88,8 @@ public:
 												    const float DeltaSeconds,       // All methods
 												    const FVector DampTime,         // All methods
 												    FVector& Output,                // All methods
-												    const FVector TemporalInput,    // Spring
-												    const FVector SpatialInput,     // Spring
-												    const FVector CurrentVelocity,  // ExactSpring
-												    const FVector TargetVector,     // ExactSpring
-												    const FVector TargetVelocity,   // ExactSpring
-												    FVector& OutVelocity,           // ExactSpring
+													const FVector CurrentVelocity,  // Spring
+													FVector& OutVelocity,           // Spring
 												    const FVector PreviousResidual, // ContinuousNaive
 													FVector& DeltaResidual          // LowPass
 											);
@@ -125,12 +101,8 @@ public:
 	 * @param (All) DeltaSeconds - The elapsed time since last frame.
 	 * @param (All) DampTime - Damp time. Will override DampParams.DampTime.
 	 * @param (All) Output - Resulting damped output rotator.
-	 * @param (Spring) TemporalInput - Camera `current position` - `previous position`
-	 * @param (Spring) SpatialInput - Camera `desired position` - `current position`
-	 * @param (ExactSpring) CurrentVelocity - Input vector representing current velocity.
-	 * @param (ExactSpring) TargetVector - Input vector representing target property, e.g., position.
-	 * @param (ExactSpring) TargetVelocity - Input vector representing target velocity.
-	 * @param (ExactSpring) OutVelocity - Ouput velocity.
+	 * @param (Spring) CurrentVelocity - Current frame's velocity.
+	 * @param (Spring) OutVelocity - Next frame's velocity.
 	 * @param (ContinuousNaive) PreviousResidual - Camera residuals at the previous frame.
 	 * @param (LowPass) DeltaResidual - Residual difference between this frame and previous frame.
 	 */
@@ -140,12 +112,8 @@ public:
 												     const float DeltaSeconds,       // All methods
 												     const FVector DampTime,         // All methods
 												     FRotator& Output,               // All methods
-												     const FVector TemporalInput,    // Spring
-												     const FVector SpatialInput,     // Spring
-												     const FVector CurrentVelocity,  // ExactSpring
-												     const FVector TargetVector,     // ExactSpring
-												     const FVector TargetVelocity,   // ExactSpring
-												     FVector& OutVelocity,           // ExactSpring
+													 const FVector CurrentVelocity,  // Spring
+													 FVector& OutVelocity,           // Spring
 												     const FVector PreviousResidual, // ContinuousNaive
 													 FVector& DeltaResidual          // LowPass
 											);
@@ -156,15 +124,10 @@ public:
 	 * @param (All) DeltaSeconds - The elapsed time since last frame.
 	 * @param (All) DampTime - Damp time. Will override DampParams.DampTime.
 	 * @param (All) Output - Resulting damped output value.
-	 * @param (Spring) TemporalInput - Camera `current position` - `previous position`
-	 * @param (Spring) SpatialInput - Camera `desired position` - `current position`
-	 * @param (Spring) SpringCoefficient - Controls how responsive camera gets back to its rest place. The larger, the more responsive.
-	 * @param (ExactSpring) CurrentVelocity - Input value representing current velocity.
-	 * @param (ExactSpring) TargetValue - Input value representing target property, e.g., position.
-	 * @param (ExactSpring) TargetVelocity - Input value representing target velocity.
-	 * @param (ExactSpring) DampRatio - Damp ratio used for the input value. A value of 1 means a critically damped spring, a value <1 means an under-damped spring, and a value of >1 means a over-damped spring.
-	 * @param (ExactSpring) HalfLife - Duration of time used to damp the input value. Cannot be negative.
-	 * @param (ExactSpring) OutVelocity - Ouput velocity.
+	 * @param (Spring) Frequency - Controls the frequency of oscillation and the speed of decay.
+	 * @param (Spring) DampRatio - Controls whether the spring is undamped (=0), underdamped (<1), critically damped (=1), or overdamped (>1).
+	 * @param (Spring) CurrentVelocity - Current frame's velocity.
+	 * @param (Spring) OutVelocity - Next frame's velocity.
 	 * @param (ContinuousNaive) PreviousResidual - Camera residuals at the previous frame.
 	 * @param (LowPass) DeltaResidual - Residual difference between this frame and previous frame.
 	 */
@@ -174,15 +137,10 @@ public:
 						 const float DeltaSeconds,       // All methods
 						 const float DampTime,           // All methods
 						 double& Output,                 // All methods
-						 const float TemporalInput,      // Spring
-		                 const float SpatialInput,       // Spring
-						 const float SpringCoefficient,  // Spring
-						 const float CurrentVelocity,    // ExactSpring
-						 const float TargetValue,        // ExactSpring
-						 const float TargetVelocity,     // ExactSpring
-						 const float DampRatio,          // ExactSpring
-						 const float HalfLife,           // ExactSpring
-						 double& OutVelocity,            // ExactSpring
+						 const float Frequency,          // Spring
+		                 const float DampRatio,          // Spring
+						 const float CurrentVelocity,    // Spring
+						 double& OutVelocity,            // Spring
 						 const float PreviousResidual,   // ContinuousNaive
 						 double& DeltaResidual           // LowPass
 				);
@@ -238,57 +196,18 @@ public:
 	UFUNCTION(BlueprintPure, Category = "ECamera|Utils", meta = (DisplayName = "DampRotatorWithDifferentDampTimes"))
 	static void DamperRotatorWithDifferentDampTime(const FDampParams& DampParams, const float& DeltaSeconds, const FRotator& Input, FVector DampTime, FRotator& Output);
 
-	/** Use a simple spring mass system to damp a vector. Note that spring damping may cause unstable camera behavior.
-	 *  If it is not what you really want, you are supposed to use other damping methods. 
-	 * @param DampParams - A set of damp parameters.
-	 * @param DeltaSeconds - The elapsed time since last frame.
-	 * @param TemporalInput - Camera `current position` - `previous position`
-	 * @param SpatialInput - Camera `desired position` - `current position` 
-	 * @param Output - Resulting damped output vector.
-	 */
-	UFUNCTION(BlueprintPure, Category = "ECamera|Utils", meta = (DisplayName = "SpringDampVector"))
-	static void SpringDampVector(const FDampParams& DampParams, const float& DeltaSeconds, const FVector& TemporalInput, const FVector& SpatialInput, FVector& Output);
-
 	/** Use a simple spring mass system to damp a value. Note that spring damping may cause unstable camera behavior.
 	 *  If it is not what you really want, you are supposed to use other damping methods.
-	 * @param MaxDeltaSeconds - Max delta seconds, default is 1 / 60.0f.
-	 * @param SpringCoefficient - Controls how responsive camera gets back to its rest place. The larger, the more responsive.
-	 * @param SpringResidual - Damp residual after damp time. Small values mean more responsiveness.
+	 * @param Frequency - Controls the frequency of oscillation and the speed of decay.
+	 * @param DampRatio - Controls whether the spring is undamped (=0), underdamped (<1), critically damped (=1), or overdamped (>1).
+	 * @param CurrentVelocity - Current frame's velocity.
+	 * @param OutVelocity - Next frame's velocity.
 	 * @param DeltaSeconds - The elapsed time since last frame.
-	 * @param TemporalInput - Camera `current position` - `previous position`
-	 * @param SpatialInput - Camera `desired position` - `current position`
+	 * @param Input - Input value to damp.
 	 * @param Output - Resulting damped output value.
 	 */
 	UFUNCTION(BlueprintPure, Category = "ECamera|Utils", meta = (DisplayName = "SpringDampValue"))
-	static void SpringDampValue(const float& MaxDeltaSeconds, const float& SpringCoefficient, const float& SpringResidual, const float& DeltaSeconds, const float& TemporalInput, const float& SpatialInput, double& Output);
-
-	/** An exact spring damper used to damp an input vector. Credit to: https://theorangeduck.com/page/spring-roll-call#dampingratio. 
-	 * @param CurrentVector - Input vector representing current property, e.g., position.
-	 * @param CurrentVelocity - Input vector representing current velocity.
-	 * @param TargetVector - Input vector representing target property, e.g., position.
-	 * @param TargetVelocity - Input vector representing target velocity.
-	 * @param DampRatio - Damp ratio used for the input vector. A value of 1 means a critically damped spring, a value <1 means an under-damped spring, and a value of >1 means a over-damped spring.
-	 * @param HalfLife - Duration of time used to damp the input vector. Cannot be negative.
-	 * @param DeltaSeconds - The elapsed time since last frame.
-	 * @param OutVector - Output vector representing current property, e.g., position.
-	 * @param OutVelocity - Ouput velocity.
-	 */
-	UFUNCTION(BlueprintPure, Category = "ECamera|Utils", meta = (DisplayName = "ExactSpringDampVector"))
-	static void ExactSpringDamperVector(const FVector& CurrentVector, const FVector& CurrentVelocity, const FVector& TargetVector, const FVector& TargetVelocity, FVector DampRatio, FVector HalfLife, const float& DeltaSeconds, FVector& OutVector, FVector& OutVelocity);
-
-	/** An exact spring damper used to damp an input value. Credit to: https://theorangeduck.com/page/spring-roll-call#dampingratio.
-	 * @param CurrentValue - Input value representing current property, e.g., position.
-	 * @param CurrentVelocity - Input value representing current velocity.
-	 * @param TargetValue - Input value representing target property, e.g., position.
-	 * @param TargetVelocity - Input value representing target velocity.
-	 * @param DampRatio - Damp ratio used for the input vector. A value of 1 means a critically damped spring, a value <1 means an under-damped spring, and a value of >1 means a over-damped spring. Cannot be negative.
-	 * @param HalfLife - Duration of time used to damp the input value. Cannot be negative.
-	 * @param DeltaSeconds - The elapsed time since last frame.
-	 * @param OutValue - Output value representing current property, e.g., position.
-	 * @param OutVelocity - Output velocity.
-	 */
-	UFUNCTION(BlueprintPure, Category = "ECamera|Utils", meta = (DisplayName = "ExactSpringDampValue"))
-	static void ExactSpringDamperValue(const double& CurrentValue, const double& CurrentVelocity, const float& TargetValue, const float& TargetVelocity, float DampRatio, float HalfLife, const float& DeltaSeconds, double& OutValue, double& OutVelocity);
+	static void SpringDampValue(const float& Frequency, const float& DampRatio, const float& CurrentVelocity, double& OutVelocity, const float& DeltaSeconds, const float& Input, double& Output);
 
 	/** Damp a vector with the same damp time for all elements in the vector. This is an optimized algorithm with continuous fourier series approximation.
 	 * @param DampParams - A set of damp parameters.
