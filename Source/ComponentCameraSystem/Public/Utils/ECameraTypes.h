@@ -608,35 +608,35 @@ public:
 	EDampMethod DampMethod;
 
 	/** Damp time. X/Y/Z or Roll/Pitch/Yaw. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod != EDampMethod::Spring && DampMethod != EDampMethod::ExactSpring"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod != EDampMethod::Spring", EditConditionHides))
 	FVector DampTime;
 
 	/** Used for Naive and Simulate. Damp residual after damp time (in percent). */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod != EDampMethod::Spring && DampMethod != EDampMethod::ExactSpring"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod != EDampMethod::Spring", EditConditionHides))
 	float Residual;
 
 	/** Used for ContinuousNaive. Orders of derivative you want to use for approximation. Larger means more accurate. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::ContinuousNaive", ClampMin = "1", ClampMax = "7"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::ContinuousNaive", ClampMin = "1", ClampMax = "7", EditConditionHides))
 	int Order;
 
 	/** Used for Spring. Controls the frequency of oscillation and the speed of decay.  */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::Spring", ClampMin = "0.0001"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::Spring", ClampMin = "0.0001", EditConditionHides))
 	FVector Frequency;
 
 	/** Used for Spring. Damp ratio, controlling whether the spring is undamped (=0), underdamped (<1), critically damped (=1), or overdamped (>1). */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::Spring", ClampMin = "0"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::Spring", ClampMin = "0", EditConditionHides))
 	FVector DampRatio;
 
 	/** Used for RestrictedNaive and SoftRestrictedNaive. Tolerance of restriction range. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::RestrictedNaive || DampMethod == EDampMethod::SoftRestrictedNaive || DampMethod == EDampMethod::LowPassNaive", ClampMin = "0.0"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::RestrictedNaive || DampMethod == EDampMethod::SoftRestrictedNaive || DampMethod == EDampMethod::LowPassNaive", ClampMin = "0.0", EditConditionHides))
 	float Tolerance;
 
 	/** Used for SoftRestrictedNaive. Controls how aggresively to compact the curve. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::SoftRestrictedNaive", ClampMin = "0.0"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::SoftRestrictedNaive", ClampMin = "0.0", EditConditionHides))
 	float Power;
 
 	/** Used for LowPassNaive. Smaller means smoother. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::LowPassNaive", ClampMin = "0.0", ClampMax = "1.0"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ECamera|FDampParams", Meta = (EditCondition = "DampMethod == EDampMethod::LowPassNaive", ClampMin = "0.0", ClampMax = "1.0", EditConditionHides))
 	float LowpassBeta;
 
 	FDampParams()
