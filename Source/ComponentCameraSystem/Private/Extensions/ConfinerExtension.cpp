@@ -90,7 +90,7 @@ FVector UConfinerExtension::GetDampedDeltaPosition(const FVector& DesiredPositio
 	/** If not within box, blending to bounding position with Damping. */
 	FVector DeltaPosition = DesiredPosition - CachedNewLocation;
 	FVector DampedDeltaPosition;
-	UECameraLibrary::DamperVectorWithSameDampTime(FDampParams(), DeltaTime, DeltaPosition, bWithinBox ? EnterDamping : ExitDamping, DampedDeltaPosition);
+	UECameraLibrary::NaiveDamperVectorWithSameDampTime(DeltaTime, DeltaPosition, DampedDeltaPosition, bWithinBox ? EnterDamping : ExitDamping);
 	return DampedDeltaPosition;
 }
 

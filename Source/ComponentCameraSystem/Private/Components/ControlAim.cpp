@@ -152,7 +152,7 @@ void UControlAim::UpdateComponent_Implementation(float DeltaTime)
 			}
 
 			double DampedDeltaYaw;
-			UECameraLibrary::DamperValue(FDampParams(), DeltaTime, DeltaYaw, 0.5f, DampedDeltaYaw);
+			UECameraLibrary::NaiveDamperValue(DeltaTime, DeltaYaw, DampedDeltaYaw, 0.5f);
 			Target->AddActorWorldRotation(FRotator(0, DampedDeltaYaw, 0));
 		}
 	}
@@ -204,7 +204,7 @@ float UControlAim::GetDampedMouseDelta(const float& MouseDelta, bool bIsHorizont
 	else DampTime = FMath::Abs(MouseDelta) < FMath::Abs(CachedMouseDeltaY) ? VerticalDamping.Y : VerticalDamping.X;
 
 	double Output = 0;
-	UECameraLibrary::DamperValue(FDampParams(), DeltaTime, (bIsHorizontal ? MouseDelta - CachedMouseDeltaX : MouseDelta - CachedMouseDeltaY), DampTime, Output);
+	UECameraLibrary::NaiveDamperValue(DeltaTime, (bIsHorizontal ? MouseDelta - CachedMouseDeltaX : MouseDelta - CachedMouseDeltaY), Output, DampTime);
 	return Output;
 }
 
@@ -234,7 +234,7 @@ bool UControlAim::ResolveRecentering(const float& DeltaTime)
 				}
 
 				FRotator OutputRotation;
-				UECameraLibrary::DamperRotatorWithSameDampTime(FDampParams(), DeltaTime, UKismetMathLibrary::NormalizedDeltaRotator(TargetQuat.Rotator(), GetOwningActor()->GetActorRotation()), RecenteringParams.RecenteringTime, OutputRotation);
+				UECameraLibrary::NaiveDamperRotatorWithSameDampTime(DeltaTime, UKismetMathLibrary::NormalizedDeltaRotator(TargetQuat.Rotator(), GetOwningActor()->GetActorRotation()), OutputRotation, RecenteringParams.RecenteringTime);
 				OutputRotation.Roll = 0;
 
 				GetOwningActor()->AddActorWorldRotation(FRotator(0, OutputRotation.Yaw, 0));

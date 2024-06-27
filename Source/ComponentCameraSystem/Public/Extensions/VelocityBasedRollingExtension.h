@@ -12,7 +12,7 @@
  * You should make sure the follow target is valid.
  * Generally this component should be applied at the last step of the camera pipeline.
  */
-UCLASS(Blueprintable, BlueprintType, classGroup = "ECamera")
+UCLASS(Blueprintable, BlueprintType, CollapseCategories, classGroup = "ECamera")
 class COMPONENTCAMERASYSTEM_API UVelocityBasedRollingExtension : public UECameraExtensionBase
 {
 	GENERATED_BODY()

@@ -13,7 +13,7 @@
  * You must be careful of the Stage property of this extension, as this property may vary in terms of 
  * the stage at which the group actor is applied. In general case, you should use PostAim.
  */
-UCLASS(Blueprintable, BlueprintType, classGroup = "ECamera")
+UCLASS(Blueprintable, BlueprintType, CollapseCategories, classGroup = "ECamera")
 class COMPONENTCAMERASYSTEM_API UResolveGroupActorExtension : public UECameraExtensionBase
 {
 	GENERATED_BODY()

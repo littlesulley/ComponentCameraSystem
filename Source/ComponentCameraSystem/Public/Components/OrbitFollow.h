@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ECameraComponentFollow.h"
+#include "Utils/ECameraDamper.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "OrbitFollow.generated.h"
 
@@ -38,9 +39,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OrbitFollow")
 	TEnumAsByte<EEasingFunc::Type> BlendFunction;
 
-	/** Damp parameters you want to use for follow damping. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OrbitFollow")
-	FDampParams DampParams;
+	/** Damper you want to use for damping. If this is None, no damping will be applied. */
+	UPROPERTY(Instanced, EditAnywhere, BlueprintReadWrite, Category = "OrbitFollow")
+	TObjectPtr<UECameraDamperVector> Damper;
 
 	/** Cached delta residual. For some damping algorithm. */
 	FVector DeltaResidual;

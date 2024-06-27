@@ -165,7 +165,7 @@ void UVelocityBasedRollingExtension::AddRoll(const float& DeltaTime, const float
 	float DeltaRoll = ExpectedRoll - CurrentRoll;
 
 	double DampedDeltaRoll;
-	UECameraLibrary::DamperValue(FDampParams(), DeltaTime, DeltaRoll, RollDamping, DampedDeltaRoll);
+	UECameraLibrary::NaiveDamperValue(DeltaTime, DeltaRoll, DampedDeltaRoll, RollDamping);
 
 	CurrentRoll += DampedDeltaRoll;
 }
@@ -182,7 +182,7 @@ void UVelocityBasedRollingExtension::RestoreRoll(const float& DeltaTime)
 
 	float DeltaRoll = ExpectedRoll - CurrentRoll;
 	double DampedDeltaRoll;
-	UECameraLibrary::DamperValue(FDampParams(), DeltaTime, DeltaRoll, RestoreDamping, DampedDeltaRoll);
+	UECameraLibrary::NaiveDamperValue(DeltaTime, DeltaRoll, DampedDeltaRoll, RestoreDamping);
 
 	CurrentRoll += DampedDeltaRoll;
 }

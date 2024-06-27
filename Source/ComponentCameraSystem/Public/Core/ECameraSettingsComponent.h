@@ -46,13 +46,13 @@ public:
 
 /** Begin properties. */
 protected:
-	UPROPERTY(Instanced, EditAnywhere, BlueprintReadOnly, Category = "ECamera|Follow")
+	UPROPERTY(Instanced, EditAnywhere, BlueprintReadOnly, Category = "ECamera")
 	TObjectPtr<UECameraComponentFollow> FollowComponent;
 
-	UPROPERTY(Instanced, EditAnywhere, BlueprintReadOnly, Category = "ECamera|Aim")
+	UPROPERTY(Instanced, EditAnywhere, BlueprintReadOnly, Category = "ECamera")
 	TObjectPtr<UECameraComponentAim> AimComponent;
 
-	UPROPERTY(Instanced, EditAnywhere, BlueprintReadOnly, Category = "ECamera|Extension")
+	UPROPERTY(Instanced, EditAnywhere, BlueprintReadOnly, Category = "ECamera")
 	TArray<TObjectPtr<UECameraExtensionBase>> Extensions;
 
 protected:

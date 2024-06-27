@@ -20,7 +20,7 @@ class UActorSequence;
  * In addition, this extension provides the funtionality of procedural generation, 
  * i.e., randomly generating curves based the curves stored in the ActorSequence component.
  */
-UCLASS(Blueprintable, BlueprintType, classGroup = "ECamera")
+UCLASS(Blueprintable, BlueprintType, CollapseCategories, classGroup = "ECamera")
 class COMPONENTCAMERASYSTEM_API UKeyframeExtension : public UECameraExtensionBase
 {
 	GENERATED_BODY()

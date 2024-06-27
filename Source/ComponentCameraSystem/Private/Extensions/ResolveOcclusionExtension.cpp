@@ -178,7 +178,7 @@ void UResolveOcclusionExtension::UpdateComponent_Implementation(float DeltaTime)
 
 		/** Use OcclusionDamping to smoothly tranform camera to its desired location. */
 		double DampedDeltaDistance;
-		UECameraLibrary::DamperValue(FDampParams(EDampMethod::Naive, 0.00001f), DeltaTime, DeltaDistance, OcclusionDamping, DampedDeltaDistance);
+		UECameraLibrary::NaiveDamperValue(DeltaTime, DeltaDistance, DampedDeltaDistance, OcclusionDamping, 0.00001f);
 		AlreadyDampedTime += DeltaTime;
 
 		/** If already finishes damping, hard applies the delta distance. */
@@ -204,7 +204,7 @@ void UResolveOcclusionExtension::ResetVariablesAndRestoreDamping(float DeltaTime
 	ResetVariables();
 
 	double DampedDeltaDistance;
-	UECameraLibrary::DamperValue(FDampParams(EDampMethod::Naive, 0.00001f), DeltaTime, Input, Damping, DampedDeltaDistance);
+	UECameraLibrary::NaiveDamperValue(DeltaTime, Input, DampedDeltaDistance, Damping, 0.00001f);
 	DeltaDistanceFromCamera = FMath::Max(DeltaDistanceFromCamera - DampedDeltaDistance, 0.0f);
 
 	GetOwningActor()->AddActorWorldOffset(DeltaDistanceFromCamera * (-Direction));

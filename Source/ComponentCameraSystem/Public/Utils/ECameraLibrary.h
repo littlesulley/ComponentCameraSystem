@@ -156,6 +156,16 @@ public:
 	UFUNCTION(BlueprintPure, Category = "ECamera|Utils", meta = (DisplayName = "DampSingleValue"))
 	static void DamperValue(const FDampParams& DampParams, const float& DeltaSeconds, const float& Input, float DampTime, double& Output);
 
+	/** Damp a float with a given damp time using the naive damp algorithm.
+	 * @param DeltaSeconds - The elapsed time since last frame.
+	 * @param Input - Input float to damp.
+	 * @param Output - Resulting damped output float.
+	 * @param DampTime - Damp time (float).
+	 * @param Residual - Damp residual after damp time (in percent).
+	 */
+	UFUNCTION(BlueprintPure, Category = "ECamera|Utils", meta = (DisplayName = "NaiveDampSingleValue"))
+	static void NaiveDamperValue(const float& DeltaSeconds, const float& Input, double& Output, float DampTime = 0.2f, float Residual = 0.01f);
+
 	/** Damp a vector with the same damp time for all elements in the vector.
 	 * @param DampParams - A set of damp parameters.
 	 * @param DeltaSeconds - The elapsed time since last frame.
@@ -165,6 +175,16 @@ public:
 	 */
 	UFUNCTION(BlueprintPure, Category = "ECamera|Utils", meta = (DisplayName = "DampVectorWithSameDampTime"))
 	static void DamperVectorWithSameDampTime(const FDampParams& DampParams, const float& DeltaSeconds, const FVector& Input, float DampTime, FVector& Output);
+
+	/** Damp a vector with the same damp time for all elements in the vector using the naive damp algorithm.
+	 * @param DeltaSeconds - The elapsed time since last frame.
+	 * @param Input - Input vector to damp.
+	 * @param Output - Resulting damped output vector.
+	 * @param DampTime - Damp time (float).
+	 * @param Residual - Damp residual after damp time (in percent).
+	 */
+	UFUNCTION(BlueprintPure, Category = "ECamera|Utils", meta = (DisplayName = "NaiveDampVectorWithSameDampTime"))
+	static void NaiveDamperVectorWithSameDampTime(const float& DeltaSeconds, const FVector& Input, FVector& Output, float DampTime = 0.2f, FVector Residual = FVector(0.01f));
 
 	/** Damp a vector with different damp times for different elements in the vector.
 	 * @param DampParams - A set of damp parameters.
@@ -185,6 +205,16 @@ public:
 	 */
 	UFUNCTION(BlueprintPure, Category = "ECamera|Utils", meta = (DisplayName = "DampRotatorWithSameDampTime"))
 	static void DamperRotatorWithSameDampTime(const FDampParams& DampParams, const float& DeltaSeconds, const FRotator& Input, float DampTime, FRotator& Output);
+
+	/** Damp a rotator with the same damp time for all elements in the vector using the naive damp algorithm.
+	 * @param DeltaSeconds - The elapsed time since last frame.
+	 * @param Input - Input rotator to damp.
+	 * @param Output - Resulting damped output rotator.
+	 * @param DampTime - Damp time (float). Will override DampParams.DampTime.
+	 * @param Residual - Damp residual after damp time (in percent).
+	 */
+	UFUNCTION(BlueprintPure, Category = "ECamera|Utils", meta = (DisplayName = "NaiveDampRotatorWithSameDampTime"))
+	static void NaiveDamperRotatorWithSameDampTime(const float& DeltaSeconds, const FRotator& Input, FRotator& Output, float DampTime = 0.2f, FVector Residual = FVector(0.01f));
 
 	/** Damp a rotator with different damp times for different elements in the rotator.
 	 * @param DampParams - A set of damp parameters.

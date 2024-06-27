@@ -15,7 +15,7 @@ UTargetingAim::UTargetingAim()
 	Stage = EStage::Aim;
 
 	AdditionalAimOffset = FVector(0.0f, 0.0f, 0.0f);
-	DampParams = FDampParams();
+	Damper = CreateDefaultSubobject<UECameraDamperRotator>("Camera Damper Vector");
 	ScreenOffset = FVector2f(0.0f, 0.0f);
 	ScreenOffsetWidth = FVector2f(-0.1f, 0.1f);
 	ScreenOffsetHeight = FVector2f(-0.1f, 0.1f);
@@ -65,9 +65,16 @@ void UTargetingAim::SetDeltaRotation(const FVector& AimPosition, FRotator& TempD
 
 FRotator UTargetingAim::DampDeltaRotation(const FRotator& TempDeltaRotation, float DeltaTime, const FVector& AimPosition)
 {
-	FRotator DampedDeltaRotation = FRotator(0, 0, 0);
-	UECameraLibrary::DamperRotatorWithDifferentDampTime(DampParams, DeltaTime, TempDeltaRotation, DampParams.DampTime, DampedDeltaRotation);
-	EnsureWithinBounds(DampedDeltaRotation, AimPosition);
+	FRotator DampedDeltaRotation = TempDeltaRotation;
+
+	if (Damper)
+	{
+		Damper->SetInput(DampedDeltaRotation);
+		DampedDeltaRotation = Damper->ApplyDamp(DeltaTime);
+		EnsureWithinBounds(DampedDeltaRotation, AimPosition);
+		Damper->SetOutput(DampedDeltaRotation);
+		Damper->PostApplyDamp();
+	}
 
 	return DampedDeltaRotation;
 }

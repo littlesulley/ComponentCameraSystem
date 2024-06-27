@@ -14,7 +14,7 @@ USimpleFollow::USimpleFollow()
 	Stage = EStage::Follow;
 	FollowType = ESimpleFollowType::WorldSpace;
 	AxisMasks = FVector(1.0f, 1.0f, 1.0f);
-	DampParams = FDampParams();
+	Damper = CreateDefaultSubobject<UECameraDamperVector>("Camera Damper Vector");
 }
 
 void USimpleFollow::UpdateComponent_Implementation(float DeltaTime)
@@ -30,17 +30,17 @@ void USimpleFollow::UpdateComponent_Implementation(float DeltaTime)
 		/** Temporary (before damping) delta position. */
 		FVector TempDeltaPosition = LocalSpaceFollowPosition;
 
+		/** Get damped delta position. */
+		FVector DampedDeltaPosition = DampDeltaPosition(TempDeltaPosition, DeltaTime);
+
 		/** Transform from local space back to world space. */
-		FVector WorldDeltaPosition = UKismetMathLibrary::TransformDirection(GetOwningActor()->GetActorTransform(), TempDeltaPosition);
+		FVector WorldDeltaPosition = UKismetMathLibrary::TransformDirection(GetOwningActor()->GetActorTransform(), DampedDeltaPosition);
 
 		/** Apply axis masks. */
 		FVector MaskedDeltaPosition = ApplyAxisMask(WorldDeltaPosition);
 
-		/** Get damped delta position. */
-		FVector DampedDeltaPosition = DampDeltaPosition(MaskedDeltaPosition, DeltaTime);
-
 		/** Apply damped delta position. */
-		GetOwningActor()->AddActorWorldOffset(DampedDeltaPosition);
+		GetOwningActor()->AddActorWorldOffset(MaskedDeltaPosition);
 	}
 }
 
@@ -101,14 +101,14 @@ FVector USimpleFollow::GetRealFollowPosition(bool bWithOffset)
 
 FVector USimpleFollow::DampDeltaPosition(const FVector& TempDeltaPosition, float DeltaTime)
 {
-	FVector DampedDeltaPosition = FVector(0, 0, 0);
-	if (DampParams.DampMethod == EDampMethod::Naive || DampParams.DampMethod == EDampMethod::Simulate)
+	FVector DampedDeltaPosition = TempDeltaPosition;
+
+	if (IsValid(Damper))
 	{
-		UECameraLibrary::DamperVectorWithDifferentDampTime(DampParams, DeltaTime, TempDeltaPosition, DampParams.DampTime, DampedDeltaPosition);
-	}
-	else
-	{
-		DampedDeltaPosition = TempDeltaPosition;
+		Damper->SetInput(TempDeltaPosition);
+		DampedDeltaPosition = Damper->ApplyDamp(DeltaTime);
+		Damper->SetOutput(DampedDeltaPosition);
+		Damper->PostApplyDamp();
 	}
 
 	return DampedDeltaPosition;

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Utils/ECameraDamper.h"
 #include "Components/ECameraComponentAim.h"
 #include "TargetingAim.generated.h"
 
@@ -23,8 +24,9 @@ protected:
 	FVector AdditionalAimOffset;
 
 	/** Damp parameters you want to use for damping. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TargetingAim")
-	FDampParams DampParams;
+	/** Damper you want to use for damping. If this is None, no damping will be applied. */
+	UPROPERTY(Instanced, EditAnywhere, BlueprintReadWrite, Category = "TargetingAim")
+	TObjectPtr<UECameraDamperRotator> Damper;
 
 	/** Screen space offset applied to the *real* aim target after applying AimOffset. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TargetingAim", meta = (ClampMin = "-0.5", ClampMax = "0.5"))

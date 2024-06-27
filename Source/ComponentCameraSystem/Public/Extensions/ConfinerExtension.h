@@ -13,7 +13,7 @@ class ATriggerBox;
  * Ensure this component is executed after follow component and before aim component.
  * You can do this by altering the stages of these components.
  */
-UCLASS(Blueprintable, BlueprintType, classGroup = "ECamera")
+UCLASS(Blueprintable, BlueprintType, CollapseCategories, classGroup = "ECamera")
 class COMPONENTCAMERASYSTEM_API UConfinerExtension : public UECameraExtensionBase
 {
 	GENERATED_BODY()

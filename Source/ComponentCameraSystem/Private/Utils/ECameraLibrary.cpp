@@ -169,11 +169,27 @@ void UECameraLibrary::DamperValue(const FDampParams& DampParams, const float& De
 	}
 }
 
+void UECameraLibrary::NaiveDamperValue(const float& DeltaSeconds, const float& Input, double& Output, float DampTime, float Residual)
+{
+	if (DeltaSeconds <= 0) { Output = 0.0f; return; }
+	if (DampTime <= 0) { Output = Input; return; }
+
+	float lnResidual = FMath::Loge(Residual);
+	Output = Input * (1.0f - FMath::Exp(lnResidual * DeltaSeconds / DampTime));
+}
+
 void UECameraLibrary::DamperVectorWithSameDampTime(const FDampParams& DampParams, const float& DeltaSeconds, const FVector& Input, float DampTime, FVector& Output)
 {
 	DamperValue(DampParams, DeltaSeconds, Input.X, DampTime, Output.X);
 	DamperValue(DampParams, DeltaSeconds, Input.Y, DampTime, Output.Y);
 	DamperValue(DampParams, DeltaSeconds, Input.Z, DampTime, Output.Z);
+}
+
+void UECameraLibrary::NaiveDamperVectorWithSameDampTime(const float& DeltaSeconds, const FVector& Input, FVector& Output, float DampTime, FVector Residual)
+{
+	NaiveDamperValue(DeltaSeconds, Input.X, Output.X, DampTime, Residual.X);
+	NaiveDamperValue(DeltaSeconds, Input.Y, Output.Y, DampTime, Residual.Y);
+	NaiveDamperValue(DeltaSeconds, Input.Z, Output.Z, DampTime, Residual.Z);
 }
 
 void UECameraLibrary::DamperVectorWithDifferentDampTime(const FDampParams& DampParams, const float& DeltaSeconds, const FVector& Input, FVector DampTime, FVector& Output)
@@ -188,6 +204,13 @@ void UECameraLibrary::DamperRotatorWithSameDampTime(const FDampParams& DampParam
 	DamperValue(DampParams, DeltaSeconds, Input.Pitch, DampTime, Output.Pitch);
 	DamperValue(DampParams, DeltaSeconds, Input.Yaw, DampTime, Output.Yaw);
 	DamperValue(DampParams, DeltaSeconds, Input.Roll, DampTime, Output.Roll);
+}
+
+void UECameraLibrary::NaiveDamperRotatorWithSameDampTime(const float& DeltaSeconds, const FRotator& Input, FRotator& Output, float DampTime, FVector Residual)
+{
+	NaiveDamperValue(DeltaSeconds, Input.Pitch, Output.Pitch, DampTime, Residual.X);
+	NaiveDamperValue(DeltaSeconds, Input.Yaw, Output.Yaw, DampTime, Residual.Y);
+	NaiveDamperValue(DeltaSeconds, Input.Roll, Output.Roll, DampTime, Residual.Z);
 }
 
 void UECameraLibrary::DamperRotatorWithDifferentDampTime(const FDampParams& DampParams, const float& DeltaSeconds, const FRotator& Input, FVector DampTime, FRotator& Output)
@@ -373,7 +396,7 @@ float UECameraLibrary::FastAtan(float x)
 void UECameraLibrary::DamperQuaternion(const FQuat& Quat1, const FQuat& Quat2, const float& DeltaSeconds, float DampTime, FQuat& Output)
 {
 	double T;
-	DamperValue(FDampParams(), DeltaSeconds, 1, DampTime, T);
+	NaiveDamperValue(DeltaSeconds, 1, T, DampTime);
 	Output = FQuat::Slerp(Quat1, Quat2, T);
 }
 

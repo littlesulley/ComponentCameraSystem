@@ -99,7 +99,7 @@ float UResolveGroupActorExtension::GetFOVForZoomOnly(TArray<FBoundingWrappedActo
 	
 	/** Damp FOV. */
 	double ResultDeltaFOV;
-	UECameraLibrary::DamperValue(FDampParams(), DeltaTime, RequiredFOV - GetCameraComponent()->FieldOfView, FOVDampTime, ResultDeltaFOV);
+	UECameraLibrary::NaiveDamperValue(DeltaTime, RequiredFOV - GetCameraComponent()->FieldOfView, ResultDeltaFOV, FOVDampTime);
 	if (GetCameraComponent()->FieldOfView + ResultDeltaFOV > FOVRange.Y) ResultDeltaFOV = FOVRange.Y - GetCameraComponent()->FieldOfView;
 	if (GetCameraComponent()->FieldOfView + ResultDeltaFOV < FOVRange.X) ResultDeltaFOV = FOVRange.X - GetCameraComponent()->FieldOfView;
 	return ResultDeltaFOV;
@@ -128,7 +128,7 @@ float UResolveGroupActorExtension::GetDistanceForDistanceOnly(TArray<FBoundingWr
 	}
 	/** Damp distance. */
 	double ResultDeltaDistance;
-	UECameraLibrary::DamperValue(FDampParams(), DeltaTime, RequiredDistance, DistanceDampTime, ResultDeltaDistance);
+	UECameraLibrary::NaiveDamperValue(DeltaTime, RequiredDistance, ResultDeltaDistance, DistanceDampTime);
 
 	if (ResultDeltaDistance + AdjustedDistance > DistanceRange.Y) ResultDeltaDistance = DistanceRange.Y - AdjustedDistance;
 	if (ResultDeltaDistance + AdjustedDistance < DistanceRange.X) ResultDeltaDistance = DistanceRange.X - AdjustedDistance;

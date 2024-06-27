@@ -32,7 +32,7 @@ class UTargetingAim;
  * 
  * NOTE: this extension can ONLY be used in lock-on cameras, i.e., ScreenFollow & TargetingAim.
  */
-UCLASS(Blueprintable, BlueprintType, classGroup = "ECamera")
+UCLASS(Blueprintable, BlueprintType, CollapseCategories, classGroup = "ECamera")
 class COMPONENTCAMERASYSTEM_API UModifyAimPointExtension : public UECameraExtensionBase
 {
 	GENERATED_BODY()

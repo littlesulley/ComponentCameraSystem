@@ -28,7 +28,7 @@ UScreenFollow::UScreenFollow()
 	bAdaptToMovement = false;
 	AdaptToMovementSpeed = 1.0f;
 	ZoomSettings = FZoomSettings();
-	DampParams = FDampParams();
+	Damper = CreateDefaultSubobject<UECameraDamperVector>("Camera Damper Vector");
 	ScreenOffset = FVector2f(0.0f, 0.0f);
 	AdaptiveScreenOffsetDistanceX = FVector2f(200.0f, -100.0f);
 	AdaptiveScreenOffsetDistanceY = FVector2f(200.0f, -100.0f);
@@ -182,23 +182,16 @@ void UScreenFollow::SetYZPlaneDelta(const FVector& LocalSpaceFollowPosition, FVe
 
 FVector UScreenFollow::DampDeltaPosition(const FVector& LocalSpaceFollowPosition, const FVector& TempDeltaPosition, float DeltaTime, const FVector2f& RealScreenOffset)
 {
-	FVector DampedDeltaPosition = FVector(0, 0, 0);
+	FVector DampedDeltaPosition = TempDeltaPosition;
 
-	UECameraLibrary::EasyDampVectorWithDifferentDampTime(
-		DampParams,
-		TempDeltaPosition,
-		DeltaTime,
-		DampParams.DampTime,
-		DampedDeltaPosition,
-		SpringVelocity,
-		SpringVelocity,
-		PreviousResidual,
-		DeltaResidual
-	);
-
-	EnsureWithinBounds(LocalSpaceFollowPosition, DampedDeltaPosition, RealScreenOffset, CurrentCameraDistance);
-
-	PreviousResidual = TempDeltaPosition - DampedDeltaPosition;
+	if (IsValid(Damper))
+	{
+		Damper->SetInput(TempDeltaPosition);
+		DampedDeltaPosition = Damper->ApplyDamp(DeltaTime);
+		EnsureWithinBounds(LocalSpaceFollowPosition, DampedDeltaPosition, RealScreenOffset, CurrentCameraDistance);
+		Damper->SetOutput(DampedDeltaPosition);
+		Damper->PostApplyDamp();
+	}
 
 	return DampedDeltaPosition;
 }
@@ -233,6 +226,6 @@ bool UScreenFollow::HasControlAimInput()
 float UScreenFollow::GetDampedZoomValue(const float& ZoomValue, const float& DeltaTime)
 {
 	double Output = 0;
-	UECameraLibrary::DamperValue(FDampParams(), DeltaTime, ZoomValue - CachedZoomValue, ZoomSettings.DampTime, Output);
+	UECameraLibrary::NaiveDamperValue(DeltaTime, ZoomValue - CachedZoomValue, Output, ZoomSettings.DampTime);
 	return Output;
 }

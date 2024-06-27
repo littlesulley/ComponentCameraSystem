@@ -13,7 +13,7 @@
  * please specify a new follow component or aim component and re-order to have
  * this extension being executed after all other components.
  */
-UCLASS(Blueprintable, BlueprintType, classGroup = "ECamera")
+UCLASS(Blueprintable, BlueprintType, CollapseCategories, classGroup = "ECamera")
 class COMPONENTCAMERASYSTEM_API UMixingCameraExtension : public UECameraExtensionBase
 {
 	GENERATED_BODY()

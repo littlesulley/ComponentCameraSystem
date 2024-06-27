@@ -15,7 +15,7 @@ class IAnimationDataController;
  * The animation sequence is only  used to drive cameras, so it should contain and only contain four tracks: position, rotation, scale and FOV.
  * You must ensure the input animation is valid in this regard.
  */
-UCLASS(Blueprintable, BlueprintType, classGroup = "ECamera")
+UCLASS(Blueprintable, BlueprintType, CollapseCategories, classGroup = "ECamera")
 class COMPONENTCAMERASYSTEM_API UAnimatedCameraExtension : public UECameraExtensionBase
 {
 	GENERATED_BODY()

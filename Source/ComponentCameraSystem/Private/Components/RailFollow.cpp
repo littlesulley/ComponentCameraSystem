@@ -78,7 +78,7 @@ void URailFollow::UpdateComponent_Implementation(float DeltaTime)
 			
 			float DeltaPosition = TargetPosition - Rail->CurrentPositionOnRail;
 			double DampedDeltaPosition;
-			UECameraLibrary::DamperValue(FDampParams(), DeltaTime, DeltaPosition, Damping, DampedDeltaPosition);
+			UECameraLibrary::NaiveDamperValue(DeltaTime, DeltaPosition, DampedDeltaPosition, Damping);
 
 			/** Apply post restrictions. */
 			ApplyPostRestrictions(DeltaTime, DampedDeltaPosition);
@@ -223,7 +223,7 @@ FVector URailFollow::GetDampedDeltaLocationInWorldSpace(float DeltaTime, float D
 	FVector RawDeltaLocation = DesiredLocation - GetOwningActor()->GetActorLocation();
 
 	FVector DampedDeltaLocation;
-	UECameraLibrary::DamperVectorWithSameDampTime(FDampParams(), DeltaTime, RawDeltaLocation, DampingTime, DampedDeltaLocation);
+	UECameraLibrary::NaiveDamperVectorWithSameDampTime(DeltaTime, RawDeltaLocation, DampedDeltaLocation, DampingTime);
 
 	return DampedDeltaLocation;
 }
@@ -232,7 +232,7 @@ float URailFollow::GetDampedDeltaPositionOnRail(float Start, float End, bool bIs
 {
 	float DeltaPosition = GetMoveAmount(Start, End, bIsForward);
 	double DampedDeltaPosition;
-	UECameraLibrary::DamperValue(FDampParams(), DeltaTime, DeltaPosition, DampingTime, DampedDeltaPosition);
+	UECameraLibrary::NaiveDamperValue(DeltaTime, DeltaPosition, DampedDeltaPosition, DampingTime);
 	return DampedDeltaPosition;
 }
 

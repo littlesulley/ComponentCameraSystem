@@ -11,7 +11,7 @@
 /**
  * ResolveOcclusionExtension is used for camera occlusion detection along the direction from camera to aim target.
  */
-UCLASS(Blueprintable, BlueprintType, classGroup = "ECamera")
+UCLASS(Blueprintable, BlueprintType, CollapseCategories, classGroup = "ECamera")
 class COMPONENTCAMERASYSTEM_API UResolveOcclusionExtension : public UECameraExtensionBase
 {
 	GENERATED_BODY()

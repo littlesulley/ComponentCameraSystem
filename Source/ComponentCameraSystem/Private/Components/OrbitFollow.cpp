@@ -13,7 +13,7 @@ UOrbitFollow::UOrbitFollow()
 	Stage = EStage::PostAim;
 
 	BlendFunction = EEasingFunc::Linear;
-	DampParams = FDampParams();
+	Damper = CreateDefaultSubobject<UECameraDamperVector>("Camera Damper Vector");
 	
 	DeltaResidual = FVector(0.0f, 0.0f, 0.0f);
 	PreviousResidual = FVector(0, 0, 0);
@@ -107,21 +107,15 @@ void UOrbitFollow::ResetOnBecomeViewTarget(APlayerController* PC, bool bPreserve
 
 FVector UOrbitFollow::DampDeltaPosition(const FVector& TempDeltaPosition, float DeltaTime)
 {
-	FVector DampedDeltaPosition = FVector(0, 0, 0);
+	FVector DampedDeltaPosition = TempDeltaPosition;
 
-	UECameraLibrary::EasyDampVectorWithDifferentDampTime(
-		DampParams,
-		TempDeltaPosition,
-		DeltaTime,
-		DampParams.DampTime,
-		DampedDeltaPosition,
-		SpringVelocity,
-		SpringVelocity,
-		PreviousResidual,
-		DeltaResidual
-	);
-
-	PreviousResidual = TempDeltaPosition - DampedDeltaPosition;
+	if (IsValid(Damper))
+	{
+		Damper->SetInput(TempDeltaPosition);
+		DampedDeltaPosition = Damper->ApplyDamp(DeltaTime);
+		Damper->SetOutput(DampedDeltaPosition);
+		Damper->PostApplyDamp();
+	}
 
 	return DampedDeltaPosition;
 }

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Utils/ECameraLibrary.h"
+#include "Utils/ECameraDamper.h"
 #include "Components/ECameraComponentFollow.h"
 #include "ScreenFollow.generated.h"
 
@@ -44,9 +45,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ScreenFollow")
 	FZoomSettings ZoomSettings;
 
-	/** Damp parameters you want to use for damping. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ScreenFollow")
-	FDampParams DampParams;
+	/** Damper you want to use for damping. If this is None, no damping will be applied. */
+	UPROPERTY(Instanced, EditAnywhere, BlueprintReadWrite, Category = "ScreenFollow")
+	TObjectPtr<UECameraDamperVector> Damper;
 
 	/** Screen space offset applied to the *real* follow target after applying FollowOffset. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ScreenFollow", meta = (ClampMin = "-0.5", ClampMax = "0.5"))

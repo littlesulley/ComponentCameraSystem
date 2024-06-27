@@ -11,7 +11,7 @@
  * Damping should be applied to ensure a smooth transition.
  * Ideally, this extension should only be used for lock-on cameras.
  */
-UCLASS(Blueprintable, BlueprintType, classGroup = "ECamera")
+UCLASS(Blueprintable, BlueprintType, CollapseCategories, classGroup = "ECamera")
 class COMPONENTCAMERASYSTEM_API UConstrainPitchExtension : public UECameraExtensionBase
 {
 	GENERATED_BODY()

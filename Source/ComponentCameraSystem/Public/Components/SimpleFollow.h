@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ECameraComponentFollow.h"
 #include "Utils/ECameraLibrary.h"
+#include "Utils/ECameraDamper.h"
 #include "SimpleFollow.generated.h"
 
 
@@ -33,9 +34,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SimpleFollow", meta = (ClampMin = "0.0", ClampMax = "1.0", EditCondition = "FollowType == ESimpleFollowType::WorldSpace"))
 	FVector AxisMasks;
 
-	/** Damp parameters you want to use for damping. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SimpleFollow")
-	FDampParams DampParams;
+	/** Damper you want to use for damping. If this is None, no damping will be applied. */
+	UPROPERTY(Instanced, EditAnywhere, BlueprintReadWrite, Category = "SimpleFollow")
+	TObjectPtr<UECameraDamperVector> Damper;
 
 public:
 	virtual void UpdateComponent_Implementation(float DeltaTime) override;
