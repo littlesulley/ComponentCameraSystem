@@ -4,17 +4,17 @@
 #include "Utils/ECameraDamper.h"
 
 //////////////////////////
-// UECameraDamperVector //
+// UECameraVectorDamper //
 //////////////////////////
 
-UECameraDamperVector::UECameraDamperVector()
+UECameraVectorDamper::UECameraVectorDamper()
 {
 	DamperX = CreateDefaultSubobject<UNaiveDamper>("Naive Damper X");
 	DamperY = CreateDefaultSubobject<UNaiveDamper>("Naive Damper Y");
 	DamperZ = CreateDefaultSubobject<UNaiveDamper>("Naive Damper Z");
 }
 
-void UECameraDamperVector::SetInput(const FVector& _Input)
+void UECameraVectorDamper::SetInput(const FVector& _Input)
 {
 	Input = _Input;
 
@@ -23,7 +23,7 @@ void UECameraDamperVector::SetInput(const FVector& _Input)
 	if (IsValid(DamperZ)) DamperZ->SetInput(Input[2]);
 }
 
-void UECameraDamperVector::SetOutput(const FVector& _Output)
+void UECameraVectorDamper::SetOutput(const FVector& _Output)
 {
 	Output = _Output;
 
@@ -32,8 +32,10 @@ void UECameraDamperVector::SetOutput(const FVector& _Output)
 	if (IsValid(DamperZ)) DamperZ->SetOutput(Output[2]);
 }
 
-FVector UECameraDamperVector::ApplyDamp(const float& DeltaTime)
+FVector UECameraVectorDamper::ApplyDamp(const float& DeltaTime)
 {
+	Output = Input;
+
 	if (IsValid(DamperX)) Output[0] = DamperX->ApplyDamp(DeltaTime);
 	if (IsValid(DamperY)) Output[1] = DamperY->ApplyDamp(DeltaTime);
 	if (IsValid(DamperZ)) Output[2] = DamperZ->ApplyDamp(DeltaTime);
@@ -41,7 +43,7 @@ FVector UECameraDamperVector::ApplyDamp(const float& DeltaTime)
 	return Output;
 }
 
-void UECameraDamperVector::PostApplyDamp()
+void UECameraVectorDamper::PostApplyDamp()
 {
 	if (IsValid(DamperX)) DamperX->PostApplyDamp();
 	if (IsValid(DamperY)) DamperY->PostApplyDamp();
@@ -49,17 +51,17 @@ void UECameraDamperVector::PostApplyDamp()
 }
 
 ///////////////////////////
-// UECameraDamperRotator //
+// UECameraRotatorDamper //
 ///////////////////////////
 
-UECameraDamperRotator::UECameraDamperRotator()
+UECameraRotatorDamper::UECameraRotatorDamper()
 {
 	DamperR = CreateDefaultSubobject<UNaiveDamper>("Naive Damper Roll");
 	DamperP = CreateDefaultSubobject<UNaiveDamper>("Naive Damper Pitch");
 	DamperY = CreateDefaultSubobject<UNaiveDamper>("Naive Damper Yaw");
 }
 
-void UECameraDamperRotator::SetInput(const FRotator& _Input)
+void UECameraRotatorDamper::SetInput(const FRotator& _Input)
 {
 	Input = _Input;
 
@@ -68,7 +70,7 @@ void UECameraDamperRotator::SetInput(const FRotator& _Input)
 	if (IsValid(DamperY)) DamperY->SetInput(Input.Yaw);
 }
 
-void UECameraDamperRotator::SetOutput(const FRotator& _Output)
+void UECameraRotatorDamper::SetOutput(const FRotator& _Output)
 {
 	Output = _Output;
 
@@ -77,16 +79,18 @@ void UECameraDamperRotator::SetOutput(const FRotator& _Output)
 	if (IsValid(DamperY)) DamperY->SetOutput(Output.Yaw);
 }
 
-FRotator UECameraDamperRotator::ApplyDamp(const float& DeltaTime)
+FRotator UECameraRotatorDamper::ApplyDamp(const float& DeltaTime)
 {
-	if (IsValid(DamperR)) Output.Roll  = DamperR->ApplyDamp(DeltaTime);
+	Output = Input;
+
+	if (IsValid(DamperR)) Output.Roll = DamperR->ApplyDamp(DeltaTime);
 	if (IsValid(DamperP)) Output.Pitch = DamperP->ApplyDamp(DeltaTime);
-	if (IsValid(DamperY)) Output.Yaw   = DamperY->ApplyDamp(DeltaTime);
+	if (IsValid(DamperY)) Output.Yaw = DamperY->ApplyDamp(DeltaTime);
 
 	return Output;
 }
 
-void UECameraDamperRotator::PostApplyDamp()
+void UECameraRotatorDamper::PostApplyDamp()
 {
 	if (IsValid(DamperR)) DamperR->PostApplyDamp();
 	if (IsValid(DamperP)) DamperP->PostApplyDamp();

@@ -8,6 +8,15 @@
 #include "ECameraDamper.generated.h"
 
 /**
+ * An abstract aggregate damper. All concrete aggregate dampers should inherit this class.
+ */
+UCLASS(Abstract, DefaultToInstanced, EditInlineNew, Blueprintable, CollapseCategories, classGroup = "ECamera")
+class COMPONENTCAMERASYSTEM_API UECameraAggregateDamper : public UObject
+{
+	GENERATED_BODY()
+};
+
+/**
  * An aggregate damper for an **FVector** input. Consists of three separate sub-dampers for each value.
  * When a damper is used in any component (follow or aim), the following typical steps should be followed:
  *   1) Call `SetInput`, set the value to damp.
@@ -16,12 +25,12 @@
  *   4) Call `PostApplyDamp` (optional), update each sub-damper's internal variables.
  */
 UCLASS(DefaultToInstanced, EditInlineNew, Blueprintable, BlueprintType, CollapseCategories, classGroup = "ECamera")
-class COMPONENTCAMERASYSTEM_API UECameraDamperVector : public UObject
+class COMPONENTCAMERASYSTEM_API UECameraVectorDamper : public UECameraAggregateDamper
 {
 	GENERATED_BODY()
 
-public:	
-	UECameraDamperVector();
+public:
+	UECameraVectorDamper();
 
 	UFUNCTION(BlueprintCallable, Category = "CameraDamperVector")
 	void SetInput(const FVector& _Input);
@@ -38,7 +47,7 @@ public:
 protected:
 	/* Input to damp at this frame. */
 	UPROPERTY(BlueprintReadWrite, Category = "CameraDamperVector")
-	FVector Input;    
+	FVector Input;
 
 	/* Output after damp at this frame. */
 	UPROPERTY(BlueprintReadWrite, Category = "CameraDamperVector")
@@ -66,12 +75,12 @@ protected:
  *   4) Call `PostApplyDamp` (optional), update each sub-damper's internal variables.
  */
 UCLASS(DefaultToInstanced, EditInlineNew, Blueprintable, BlueprintType, CollapseCategories, classGroup = "ECamera")
-class COMPONENTCAMERASYSTEM_API UECameraDamperRotator : public UObject
+class COMPONENTCAMERASYSTEM_API UECameraRotatorDamper : public UECameraAggregateDamper
 {
 	GENERATED_BODY()
 
 public:
-	UECameraDamperRotator();
+	UECameraRotatorDamper();
 
 	UFUNCTION(BlueprintCallable, Category = "CameraDamperRotator")
 	void SetInput(const FRotator& _Input);
@@ -135,7 +144,7 @@ public:
 	 * Implement this function to apply damping to the internal variable `Input` with elapsed `DeltaTime`.
 	 * This function generally caches the damped value as the internal `Output` value and returns it.
 	 */
-	UFUNCTION(BlueprintNativeEvent, Category = "CameraDamper")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CameraDamper")
 	float ApplyDamp(const float& DeltaTime);
 	virtual float ApplyDamp_Implementation(const float& DeltaTime) { return Input; }
 
@@ -143,7 +152,7 @@ public:
 	 * Implement this function to update the damper's internal variables, e.g., cached positions/velocities.
 	 * This function provides an ad-hoc interface for customized dampers and is usually called after `SetOutput`.
 	 */
-	UFUNCTION(BlueprintNativeEvent, Category = "CameraDamper")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CameraDamper")
 	void PostApplyDamp();
 	virtual void PostApplyDamp_Implementation() { }
 
@@ -168,11 +177,11 @@ public:
 	UNaiveDamper(float InDampTime) : DampTime(InDampTime) {}
 	UNaiveDamper(float InDampTime, float InResidual) : DampTime(InDampTime), Residual(InResidual) {}
 
-	/** Damp time. X/Y/Z or Roll/Pitch/Yaw. */
+	/** Damp time. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NaiveDamper", meta = (ClampMin = "0"))
 	float DampTime{ 0.2 };
 
-	/** Damp residual after damp time (in percent). X/Y/Z or Roll/Pitch/Yaw. */
+	/** Damp residual after damp time (in percent). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NaiveDamper", meta = (ClampMin = "0.0001", ClampMax = "1"))
 	float Residual{ 0.01 };
 
@@ -189,11 +198,11 @@ public:
 	USimulateDamper() {}
 	USimulateDamper(float InDampTime, float InResidual, int InCount) : DampTime(InDampTime), Residual(InResidual), SimulateCount(InCount) {}
 
-	/** Damp time. X/Y/Z or Roll/Pitch/Yaw. */
+	/** Damp time. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SimulateDamper", meta = (ClampMin = "0"))
 	float DampTime{ 0.2 };
 
-	/** Damp residual after damp time (in percent). X/Y/Z or Roll/Pitch/Yaw. */
+	/** Damp residual after damp time (in percent). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SimulateDamper", meta = (ClampMin = "0.0001", ClampMax = "1"))
 	float Residual{ 0.01 };
 
@@ -214,11 +223,11 @@ public:
 	UContinuousNaiveDamper() {}
 	UContinuousNaiveDamper(float InDampTime, float InResidual, int InOrder) : DampTime(InDampTime), Residual(InResidual), Order(InOrder) {}
 
-	/** Damp time. X/Y/Z or Roll/Pitch/Yaw. */
+	/** Damp time. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ContinuousDamper", meta = (ClampMin = "0"))
 	float DampTime{ 0.2 };
 
-	/** Damp residual after damp time (in percent). X/Y/Z or Roll/Pitch/Yaw. */
+	/** Damp residual after damp time (in percent). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ContinuousDamper", meta = (ClampMin = "0.0001", ClampMax = "1"))
 	float Residual{ 0.01 };
 
@@ -244,11 +253,11 @@ public:
 	URestrictNaiveDamper() { }
 	URestrictNaiveDamper(float InDampTime, float InResidual, float InTolerance, float InPower) : DampTime(InDampTime), Residual(InResidual), Tolerance(InTolerance), Power(InPower) {}
 
-	/** Damp time. X/Y/Z or Roll/Pitch/Yaw. */
+	/** Damp time. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "RestrictDamper", meta = (ClampMin = "0"))
 	float DampTime{ 0.2 };
 
-	/** Damp residual after damp time (in percent). X/Y/Z or Roll/Pitch/Yaw. */
+	/** Damp residual after damp time (in percent). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "RestrictDamper", meta = (ClampMin = "0.0001", ClampMax = "1"))
 	float Residual{ 0.01 };
 
@@ -277,11 +286,11 @@ public:
 	ULowpassNaiveDamper() { }
 	ULowpassNaiveDamper(float InDampTime, float InResidual, float InTolerance, float InBeta) : DampTime(InDampTime), Residual(InResidual), Tolerance(InTolerance), Beta(InBeta) {}
 
-	/** Damp time. X/Y/Z or Roll/Pitch/Yaw. */
+	/** Damp time. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LowpassDamper", meta = (ClampMin = "0"))
 	float DampTime{ 0.2 };
 
-	/** Damp residual after damp time (in percent). X/Y/Z or Roll/Pitch/Yaw. */
+	/** Damp residual after damp time (in percent). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LowpassDamper", meta = (ClampMin = "0.0001", ClampMax = "1"))
 	float Residual{ 0.01 };
 
@@ -311,11 +320,11 @@ public:
 	USpringDamper() {}
 	USpringDamper(float InFrequency, float InDampRatio) : Frequency(InFrequency), DampRatio(InDampRatio) {}
 
-	/** Used for Spring. Controls the frequency of oscillation and the speed of decay.  X/Y/Z or Roll/Pitch/Yaw. */
+	/** Used for Spring. Controls the frequency of oscillation and the speed of decay. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpringDamper", Meta = (ClampMin = "0.0001"))
 	float Frequency{ 3.1415926 };
 
-	/** Used for Spring. Damp ratio, controlling whether the spring is undamped (=0), underdamped (<1), critically damped (=1), or overdamped (>1). X/Y/Z or Roll/Pitch/Yaw. */
+	/** Used for Spring. Controls whether the spring is undamped (=0), underdamped (<1), critically damped (=1), or overdamped (>1). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SpringDamper", Meta = (ClampMin = "0"))
 	float DampRatio{ 1.0 };
 

@@ -15,7 +15,7 @@ UTargetingAim::UTargetingAim()
 	Stage = EStage::Aim;
 
 	AdditionalAimOffset = FVector(0.0f, 0.0f, 0.0f);
-	Damper = CreateDefaultSubobject<UECameraDamperRotator>("Camera Damper Vector");
+	Damper = CreateDefaultSubobject<UECameraRotatorDamper>("Camera Damper Vector");
 	ScreenOffset = FVector2f(0.0f, 0.0f);
 	ScreenOffsetWidth = FVector2f(-0.1f, 0.1f);
 	ScreenOffsetHeight = FVector2f(-0.1f, 0.1f);

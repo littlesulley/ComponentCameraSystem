@@ -14,7 +14,7 @@ USimpleFollow::USimpleFollow()
 	Stage = EStage::Follow;
 	FollowType = ESimpleFollowType::WorldSpace;
 	AxisMasks = FVector(1.0f, 1.0f, 1.0f);
-	Damper = CreateDefaultSubobject<UECameraDamperVector>("Camera Damper Vector");
+	Damper = CreateDefaultSubobject<UECameraVectorDamper>("Camera Damper Vector");
 }
 
 void USimpleFollow::UpdateComponent_Implementation(float DeltaTime)

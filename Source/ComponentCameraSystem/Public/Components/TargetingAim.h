@@ -26,7 +26,7 @@ protected:
 	/** Damp parameters you want to use for damping. */
 	/** Damper you want to use for damping. If this is None, no damping will be applied. */
 	UPROPERTY(Instanced, EditAnywhere, BlueprintReadWrite, Category = "TargetingAim")
-	TObjectPtr<UECameraDamperRotator> Damper;
+	TObjectPtr<UECameraRotatorDamper> Damper;
 
 	/** Screen space offset applied to the *real* aim target after applying AimOffset. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TargetingAim", meta = (ClampMin = "-0.5", ClampMax = "0.5"))

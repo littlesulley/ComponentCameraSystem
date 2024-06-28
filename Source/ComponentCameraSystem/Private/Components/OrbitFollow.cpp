@@ -13,7 +13,7 @@ UOrbitFollow::UOrbitFollow()
 	Stage = EStage::PostAim;
 
 	BlendFunction = EEasingFunc::Linear;
-	Damper = CreateDefaultSubobject<UECameraDamperVector>("Camera Damper Vector");
+	Damper = CreateDefaultSubobject<UECameraVectorDamper>("Camera Damper Vector");
 	
 	DeltaResidual = FVector(0.0f, 0.0f, 0.0f);
 	PreviousResidual = FVector(0, 0, 0);

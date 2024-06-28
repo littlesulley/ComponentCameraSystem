@@ -47,7 +47,7 @@ protected:
 
 	/** Damper you want to use for damping. If this is None, no damping will be applied. */
 	UPROPERTY(Instanced, EditAnywhere, BlueprintReadWrite, Category = "ScreenFollow")
-	TObjectPtr<UECameraDamperVector> Damper;
+	TObjectPtr<UECameraVectorDamper> Damper;
 
 	/** Screen space offset applied to the *real* follow target after applying FollowOffset. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ScreenFollow", meta = (ClampMin = "-0.5", ClampMax = "0.5"))

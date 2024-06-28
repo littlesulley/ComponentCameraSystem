@@ -41,7 +41,7 @@ protected:
 
 	/** Damper you want to use for damping. If this is None, no damping will be applied. */
 	UPROPERTY(Instanced, EditAnywhere, BlueprintReadWrite, Category = "OrbitFollow")
-	TObjectPtr<UECameraDamperVector> Damper;
+	TObjectPtr<UECameraVectorDamper> Damper;
 
 	/** Cached delta residual. For some damping algorithm. */
 	FVector DeltaResidual;

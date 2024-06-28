@@ -28,7 +28,7 @@ UScreenFollow::UScreenFollow()
 	bAdaptToMovement = false;
 	AdaptToMovementSpeed = 1.0f;
 	ZoomSettings = FZoomSettings();
-	Damper = CreateDefaultSubobject<UECameraDamperVector>("Camera Damper Vector");
+	Damper = CreateDefaultSubobject<UECameraVectorDamper>("Camera Damper Vector");
 	ScreenOffset = FVector2f(0.0f, 0.0f);
 	AdaptiveScreenOffsetDistanceX = FVector2f(200.0f, -100.0f);
 	AdaptiveScreenOffsetDistanceY = FVector2f(200.0f, -100.0f);
