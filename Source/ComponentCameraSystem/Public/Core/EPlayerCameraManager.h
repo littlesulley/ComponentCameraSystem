@@ -98,7 +98,6 @@ protected:
 	TArray<TSubclassOf<AActor>> UnpausableObjects;
 
 	TObjectPtr<UUserWidget> PhotoModeUI = nullptr;
-	TObjectPtr<class AEPhotoCamera> PhotoCamera = nullptr;
 	TObjectPtr<APawn> ControlledPawn = nullptr;
 	FVector PivotPosition;
 
@@ -336,6 +335,6 @@ public:
 	UUserWidget* GetPhotoModeUI() { return PhotoModeUI; }
 	FVector GetPhotoModePivotPosition() { return PivotPosition; }
 	APawn* GetPhotoModeControlledPawn() { return ControlledPawn; }
-	void PauseGame();
+	void PauseGame(class AEPhotoCamera* PhotoCamera);
 	void UnpauseGame();
 };

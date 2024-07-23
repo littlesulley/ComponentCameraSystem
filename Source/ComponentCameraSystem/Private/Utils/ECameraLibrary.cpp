@@ -9,12 +9,13 @@
 #include "Cameras/EKeyframedCamera.h"
 #include "Core/ECameraBase.h"
 #include "Core/ECameraSettingsComponent.h"
-#include "Core/ECameraManager.h"
+#include "Core/ECameraSubsystem.h"
 #include "Core/EPlayerCameraManager.h"
 #include "Extensions/AnimatedCameraExtension.h"
 #include "Extensions/KeyframeExtension.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
+#include "Engine/GameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ScriptInterface.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -701,18 +702,33 @@ AESequencedCameraSetupActor* UECameraLibrary::CallSequencedCamera(const UObject*
 void UECameraLibrary::TerminateActiveCamera(const UObject* WorldContextObject)
 {
 	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
-	AECameraManager* Manager = Cast<AECameraManager>(UGameplayStatics::GetActorOfClass(World, AECameraManager::StaticClass()));
-	if (Manager != nullptr) Manager->TerminateActiveCamera();
+	if (const UGameInstance* GameInstance = World->GetGameInstance())
+	{
+		if (UECameraSubsystem* Subsystem = GameInstance->GetSubsystem<UECameraSubsystem>())
+		{
+			if (IsValid(Subsystem))
+			{
+				Subsystem->TerminateActiveCamera();
+			}
+		}
+	}
 }
 
 AECameraBase* UECameraLibrary::GetActiveCamera(const UObject* WorldContextObject)
 {
-	AActor* ManagerActor = UGameplayStatics::GetActorOfClass(WorldContextObject, AECameraManager::StaticClass());
-	if (ManagerActor != nullptr)
+	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+	if (const UGameInstance* GameInstance = World->GetGameInstance())
 	{
-		return Cast<AECameraManager>(ManagerActor)->GetActiveCamera();
+		if (UECameraSubsystem* Subsystem = GameInstance->GetSubsystem<UECameraSubsystem>())
+		{
+			if (IsValid(Subsystem))
+			{
+				return Subsystem->GetActiveCamera();
+			}
+		}
 	}
-	else return nullptr;
+
+	return nullptr;
 }
 
 AEPlayerCameraManager* UECameraLibrary::GetEPlayerCameraManager(const UObject* WorldContextObject, int32 index)

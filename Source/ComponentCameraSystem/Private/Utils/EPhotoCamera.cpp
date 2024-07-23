@@ -3,8 +3,8 @@
 #include "Utils/EPhotoCamera.h"
 #include "Camera/CameraComponent.h"
 #include "Core/EPlayerCameraManager.h"
-#include "Core/ECameraManager.h"
 #include "Core/ECameraBase.h"
+#include "Core/ECameraSubsystem.h"
 #include "Utils/ECameraLibrary.h"
 #include "Utils/ECameraTypes.h"
 #include "Kismet/GameplayStatics.h"
@@ -23,7 +23,7 @@
 #include "Misc/DateTime.h"
 #include "Blueprint/UserWidget.h"
 
-AEPhotoCamera::AEPhotoCamera(const FObjectInitializer& ObjectInitializer) 
+AEPhotoCamera::AEPhotoCamera(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereCollision"));
@@ -48,12 +48,12 @@ void AEPhotoCamera::BeginPlay()
 			Subsystem->AddMappingContext(PhotoModeMappingContext, 0);
 		}
 	}
-
-	PlayerCameraManager = Cast<AEPlayerCameraManager>(UGameplayStatics::GetActorOfClass(this, AEPlayerCameraManager::StaticClass()));
 }
 
 void AEPhotoCamera::BecomeViewTarget(class APlayerController* PC)
 {
+	PlayerCameraManager = Cast<AEPlayerCameraManager>(UGameplayStatics::GetActorOfClass(this, AEPlayerCameraManager::StaticClass()));
+
 	if (IsValid(PlayerCameraManager))
 	{
 		PivotPosition = PlayerCameraManager->GetPhotoModePivotPosition();
@@ -67,13 +67,29 @@ void AEPhotoCamera::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (bUnpaused)
+	{
+		ElapsedPauseTime += DeltaTime;
+		if (ElapsedPauseTime >= 0.6f)
+		{
+			PlayerCameraManager->UnpauseGame();
+
+			APlayerController* PC = Cast<APlayerController>(GetController());
+			ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer())->RemoveMappingContext(PhotoModeMappingContext);
+			PC->Possess(ControlledPawn);
+			PC->SetViewTargetWithBlend(UECameraLibrary::GetActiveCamera(this), 0.0f);
+
+			bUnpaused = false;
+			this->Destroy();
+		}
+	}
 }
 
 void AEPhotoCamera::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) 
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		// Switch
 		EnhancedInputComponent->BindAction(PhotoModeAction, ETriggerEvent::Completed, this, &AEPhotoCamera::PhotoModeSwitch);
@@ -91,38 +107,13 @@ void AEPhotoCamera::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 void AEPhotoCamera::PhotoModeSwitch(const FInputActionValue& Value)
 {
-	FTimerManager* TimerManager = &GetWorld()->GetTimerManager();
+	/** Destroy ui widget.*/
+	PhotoModeUI->RemoveFromParent();
+	PhotoModeUI = nullptr;
 
-	AActor* ManagerActor = UGameplayStatics::GetActorOfClass(this, AECameraManager::StaticClass());
-
-	if (IsValid(ManagerActor))
-	{			
-		PlayerCameraManager->EasyStartCameraFade(0.0f, 1.0f, 0.5f, EEasingFunc::Linear, 0.2f, 0.5f, EEasingFunc::Linear, FLinearColor::Black);
-
-		FTimerHandle TimeHandle;
-		TimerManager->SetTimer(
-			TimeHandle, 
-			[this, ManagerActor]() {
-				Cast<APlayerController>(GetController())->SetViewTargetWithBlend(Cast<AECameraManager>(ManagerActor)->GetActiveCamera(), 0.0f);
-			},
-			0.5f,
-			false
-		);
-	}
-
-	FTimerHandle TimeHandle;
-	TimerManager->SetTimer(
-		TimeHandle, 
-		[this]() {
-			Cast<APlayerController>(GetController())->Possess(ControlledPawn);
-		},
-		0.7f, 
-		false
-	);
-
+	bUnpaused = true;
+	PlayerCameraManager->EasyStartCameraFade(0.0f, 1.0f, 0.5f, EEasingFunc::Linear, 0.2f, 0.5f, EEasingFunc::Linear, FLinearColor::Black);
 	OnPhotoModeQuit(PhotoModeUI);
-
-	PlayerCameraManager->UnpauseGame();
 }
 
 void AEPhotoCamera::PhotoModeMove(const FInputActionValue& Value)

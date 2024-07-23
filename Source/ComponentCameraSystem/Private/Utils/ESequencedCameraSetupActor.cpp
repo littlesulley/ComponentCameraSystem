@@ -3,7 +3,6 @@
 #include "Utils/ESequencedCameraSetupActor.h"
 #include "Utils/ECameraLibrary.h"
 #include "Core/ECameraSettingsComponent.h"
-#include "Core/ECameraManager.h"
 #include "Core/ECameraBase.h"
 #include "Kismet/GameplayStatics.h"
 

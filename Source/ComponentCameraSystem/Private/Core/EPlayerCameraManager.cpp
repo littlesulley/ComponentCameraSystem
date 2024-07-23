@@ -2,7 +2,7 @@
 
 #include "Core/EPlayerCameraManager.h"
 #include "Core/ECameraBase.h"
-#include "Core/ECameraManager.h"
+#include "Core/ECameraSubsystem.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Camera/CameraModifier_CameraShake.h"
 #include "WaveOscillatorCameraShakePattern.h"
@@ -20,6 +20,7 @@
 #include "Camera/CameraShakeSourceComponent.h"
 #include "UObject/ScriptInterface.h"
 #include "Engine/BlendableInterface.h"
+#include "Engine/GameInstance.h"
 #include "Components/MeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
@@ -947,39 +948,45 @@ void AEPlayerCameraManager::SwitchPhotoMode()
 		return;
 	}
 
-	AActor* PhotoCameraActor = UGameplayStatics::GetActorOfClass(this, AEPhotoCamera::StaticClass());
-
-	if (IsValid(PhotoCameraActor))
+	if (PhotoModeCamera == nullptr)
 	{
-		PhotoCamera = Cast<AEPhotoCamera>(PhotoCameraActor);
-	}
-	else if (PhotoModeCamera)
-	{
-		PhotoCamera = Cast<AEPhotoCamera>(GetWorld()->SpawnActor(PhotoModeCamera));
+		UE_LOG(LogTemp, Error, TEXT("Photo Camera Class is null. You must specify a valid photo camera class for photo mode."));
+		return;
 	}
 
-	AActor* ManagerActor = UGameplayStatics::GetActorOfClass(this, AECameraManager::StaticClass());
-	if (IsValid(ManagerActor))
+	// Use deferred spawning to possess PhotoCamera before executing its BeginPlay function.
+	AEPhotoCamera* PhotoCamera = GetWorld()->SpawnActorDeferred<AEPhotoCamera>(PhotoModeCamera, FTransform{});
+
+	if (const UWorld* World = GetWorld())
 	{
-		if (Cast<AECameraManager>(ManagerActor)->GetActiveCamera()->GetFollowTarget())
+		if (const UGameInstance* GameInstance = World->GetGameInstance())
 		{
-			PivotPosition = Cast<AECameraManager>(ManagerActor)->GetActiveCamera()->GetFollowTarget()->GetActorLocation();
-		}
-		else
-		{
-			PivotPosition = Cast<AECameraManager>(ManagerActor)->GetActiveCamera()->GetActorLocation();
+			if (UECameraSubsystem* Subsystem = GameInstance->GetSubsystem<UECameraSubsystem>())
+			{
+				if (Subsystem->GetActiveCamera()->GetFollowTarget())
+				{
+					PivotPosition = Subsystem->GetActiveCamera()->GetFollowTarget()->GetActorLocation();
+				}
+				else
+				{
+					PivotPosition = Subsystem->GetActiveCamera()->GetActorLocation();
+				}
+			}
 		}
 	}
-	
+
 	ControlledPawn = GetOwningPlayerController()->GetPawn();
 
 	GetOwningPlayerController()->Possess(PhotoCamera);
 	GetOwningPlayerController()->SetViewTargetWithBlend(PhotoCamera);
-	
-	PauseGame();
+
+	// Must execute FinishSpawningActor to indicate completing spawning
+	UGameplayStatics::FinishSpawningActor(PhotoCamera, FTransform{});
+
+	PauseGame(PhotoCamera);
 }
 
-void AEPlayerCameraManager::PauseGame()
+void AEPlayerCameraManager::PauseGame(AEPhotoCamera* PhotoCamera)
 {
 	/** Create and setup ui widget. */
 	PhotoModeUI = CreateWidget(GetOwningPlayerController(), PhotoModeWidget);
@@ -1020,15 +1027,10 @@ void AEPlayerCameraManager::PauseGame()
 
 void AEPlayerCameraManager::UnpauseGame()
 {
-	/** Destroy ui widget.*/
-	PhotoModeUI->RemoveFromParent();
-	PhotoModeUI = nullptr;
-
 	bEnableDither = bOriginalEnableDither;
 
 	/** Set unpausable objects. */
 	GetOwningPlayerController()->bShowMouseCursor = false;
-	PhotoCamera->SetTickableWhenPaused(false);
 
 	for (TSubclassOf<AActor> UnpaussableObjectClass : UnpausableObjects)
 	{

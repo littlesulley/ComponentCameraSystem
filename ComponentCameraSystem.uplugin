@@ -18,13 +18,13 @@
 		{
 			"Name": "ComponentCameraSystem",
 			"Type": "Runtime",
-			"LoadingPhase": "Default",
+			"LoadingPhase": "PreDefault",
 			"WhitelistPlatforms": [ "Win64", "Android", "Linux", "LinuxArm64" ]
 		},
 		{
 			"Name": "ComponentCameraSystemNonAndroid",
 			"Type": "Runtime",
-			"LoadingPhase": "Default",
+			"LoadingPhase": "PreDefault",
 			"WhitelistPlatforms": [ "Win64", "Linux"]
 		},
 		{

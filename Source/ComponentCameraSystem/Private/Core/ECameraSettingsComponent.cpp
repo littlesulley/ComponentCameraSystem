@@ -2,7 +2,7 @@
 
 #include "Core/ECameraSettingsComponent.h"
 #include "Core/ECameraBase.h"
-#include "Core/ECameraManager.h"
+#include "Core/ECameraSubsystem.h"
 #include "Core/ECameraComponentBase.h"
 #include "Components/ECameraComponentAim.h"
 #include "Components/ECameraComponentFollow.h"
@@ -30,7 +30,6 @@ UECameraSettingsComponent::UECameraSettingsComponent()
 void UECameraSettingsComponent::OnRegister()
 {
 	Super::OnRegister();
-	RegisterManager();
 	InitializeECameraComponents();
 }
 
@@ -82,11 +81,6 @@ APlayerCameraManager* UECameraSettingsComponent::GetPlayerCameraManager() const
 {
 	APlayerController* PlayerController = GetPlayerController();
 	return PlayerController != nullptr ? PlayerController->PlayerCameraManager : nullptr;
-}
-
-AECameraManager* UECameraSettingsComponent::GetECameraManager() const
-{
-	return ECameraManager;
 }
 
 bool UECameraSettingsComponent::GetForceActive() const
@@ -263,17 +257,6 @@ void UECameraSettingsComponent::SetAimComponent(UECameraComponentAim* InAimCompo
 TArray<UECameraExtensionBase*> UECameraSettingsComponent::GetExtensions() const
 {
 	return Extensions;
-}
-
-void UECameraSettingsComponent::RegisterManager()
-{
-	UWorld* World = GetWorld();
-	AECameraManager* Manager = Cast<AECameraManager>(UGameplayStatics::GetActorOfClass(World, AECameraManager::StaticClass()));
-	if (Manager == nullptr)
-	{
-		Manager = World->SpawnActor<AECameraManager>();
-	}
-	ECameraManager = Manager;
 }
 
 void UECameraSettingsComponent::InitializeECameraComponents()

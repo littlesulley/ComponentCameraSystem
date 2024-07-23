@@ -14,9 +14,9 @@
 #include "Animation/AnimationPoseData.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Core/ECameraManager.h"
+#include "Core/ECameraSubsystem.h"
 #include "Core/ECameraSettingsComponent.h"
-
+#include "Utils/ECameraLibrary.h"
 
 UAnimatedCameraExtension::UAnimatedCameraExtension()
 {
@@ -66,7 +66,7 @@ void UAnimatedCameraExtension::UpdateComponent_Implementation(float DeltaTime)
 		if (ElapsedTime >= AnimToPlay->GetPlayLength())
 		{
 			/** Terminate this camera. */
-			OwningSettingComponent->GetECameraManager()->TerminateActiveCamera();
+			UECameraLibrary::TerminateActiveCamera(this);
 		}
 	}
 }

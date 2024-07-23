@@ -11,7 +11,6 @@
 #include "CameraRig_Crane.h"
 #include "Core/ECameraSettingsComponent.h"
 #include "Core/ECameraBase.h"
-#include "Core/ECameraManager.h"
 #include "Components/ECameraComponentFollow.h"
 #include "Components/ECameraComponentAim.h"
 #include "Components/ScreenFollow.h"
@@ -29,23 +28,11 @@
 #include "Extensions/ResolveGroupActorExtension.h"
 #include "Utils/ECameraGroupActor.h"
 #include "Utils/ECameraGroupActorComponent.h"
+#include "Utils/ECameraLibrary.h"
 
 void AECameraHUD::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (ECameraManager == nullptr)
-	{
-		UWorld* World = GetWorld();
-		AECameraManager* Manager = Cast<AECameraManager>(UGameplayStatics::GetActorOfClass(World, AECameraManager::StaticClass()));
-
-		if (Manager == nullptr)
-		{
-			Manager = World->SpawnActor<AECameraManager>();
-		}
-		
-		ECameraManager = Manager;
-	}
 }
 
 void AECameraHUD::DrawHUD()
@@ -53,9 +40,9 @@ void AECameraHUD::DrawHUD()
 	Super::DrawHUD();
 
 #if ENABLE_DRAW_DEBUG
-	if (bShowCameraDebug && ECameraManager)
+	if (bShowCameraDebug)
 	{
-		AECameraBase* ActiveCamera = ECameraManager->GetActiveCamera();
+		AECameraBase* ActiveCamera = UECameraLibrary::GetActiveCamera(this);
 		if (ActiveCamera && ActiveCamera->GetSettingsComponent()->IsActive())
 		{
 			UECameraSettingsComponent* CameraSettingsComponent = ActiveCamera->GetSettingsComponent();

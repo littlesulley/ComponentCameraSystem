@@ -1,18 +1,27 @@
 // Copyright 2023 by Sulley. All Rights Reserved.
 
-#include "Core/ECameraManager.h"
+#include "Core/ECameraSubsystem.h"
 #include "Core/ECameraBase.h"
 #include "Core/ECameraSettingsComponent.h"
 #include "Utils/ECameraLibrary.h"
 #include "Kismet/GameplayStatics.h"
-#include "Camera/CameraActor.h"
 
-AECameraManager::AECameraManager()
+void UECameraSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
-	PrimaryActorTick.bCanEverTick = true;
+	WorkMode = ECameraWorkMode::Classic;
 }
 
-void AECameraManager::AddCamera(AECameraBase* Camera)
+void UECameraSubsystem::Deinitialize()
+{
+
+}
+
+void UECameraSubsystem::SetCameraWorkMode(ECameraWorkMode Mode)
+{
+	WorkMode = Mode;
+}
+
+void UECameraSubsystem::AddCamera(class AECameraBase* Camera)
 {
 	if (IsValid(Camera))
 	{
@@ -28,7 +37,7 @@ void AECameraManager::AddCamera(AECameraBase* Camera)
 	}
 }
 
-void AECameraManager::DestroyCamera(AECameraBase* Camera)
+void UECameraSubsystem::DestroyCamera(AECameraBase* Camera)
 {
 	if (IsValid(Camera))
 	{
@@ -42,28 +51,31 @@ void AECameraManager::DestroyCamera(AECameraBase* Camera)
 	}
 }
 
-bool AECameraManager::TerminateActiveCamera()
+bool UECameraSubsystem::TerminateActiveCamera()
 {
 	RefreshContainer();
 
-	/** If no valid outgoing camera exists, do nothing. */
-	if (CameraContainer.Num() < 2) return false;
+	if (CameraContainer.Num() < 2)
+	{
+		return false;
+	}
 
 	int ValidCameraIndex = CameraContainer.Num() - 2;
 	CameraContainer.Swap(ValidCameraIndex, ValidCameraIndex + 1);
 	ActiveCamera = CameraContainer.Top();
 
-	/** Set new view target. */
+	// @TODO: Where should the PC come from? GameInstance?
 	APlayerController* PC = ActiveCamera->GetSettingsComponent()->GetPlayerController();
 	PC->SetViewTargetWithBlend(ActiveCamera, ActiveCamera->DefaultBlendTime, ActiveCamera->DefaultBlendFunc, ActiveCamera->DefaultBlendExp, ActiveCamera->bDefaultLockOutgoing);
+
 	return true;
 }
 
-void AECameraManager::RefreshContainer()
+void UECameraSubsystem::RefreshContainer()
 {
 	for (int i = 0, count = CameraContainer.Num() - 1; i < count; ++i)
 	{
-		/** Filter out the following cameras: 
+		/** Filter out the following cameras:
 		 *  1). Invalid cameras
 		 *  2). Transitory cameras. The rationale is that transitory cameras are only "transitory", and they cannot resume once overwritten.
 		 */
@@ -75,8 +87,8 @@ void AECameraManager::RefreshContainer()
 			}
 
 			CameraContainer.RemoveAt(i);
-			--i;
-			--count;
+			i--;
+			count--;
 		}
 	}
 }

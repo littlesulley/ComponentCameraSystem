@@ -70,6 +70,8 @@ public:
 
 private:
 	UUserWidget* PhotoModeUI;
+	float ElapsedPauseTime{ 0.0f };
+	bool bUnpaused{ false };
 
 protected:
 	virtual void BeginPlay() override;

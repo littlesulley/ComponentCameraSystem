@@ -14,7 +14,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Utils/ECameraLibrary.h"
 #include "Utils/PCMGNeuralNetwork.h"
-#include "Core/ECameraManager.h"
+#include "Core/ECameraSubsystem.h"
 
 UKeyframeExtension::UKeyframeExtension()
 {
@@ -57,7 +57,7 @@ void UKeyframeExtension::UpdateComponent_Implementation(float DeltaTime)
 		ElapsedFrames = FFrameTime::FromDecimal(ElapsedTime * SequencePlayer->GetFrameRate().AsDecimal() * SequencePlayer->GetPlayRate());
 		if (ElapsedFrames.FrameNumber >= SequencePlayer->GetFrameDuration())
 		{
-			OwningSettingComponent->GetECameraManager()->TerminateActiveCamera();
+			UECameraLibrary::TerminateActiveCamera(this);
 		}
 	}
 }

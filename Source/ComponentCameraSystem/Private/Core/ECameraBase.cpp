@@ -3,7 +3,7 @@
 
 #include "Core/ECameraBase.h"
 #include "Core/ECameraSettingsComponent.h"
-#include "Core/ECameraManager.h"
+#include "Core/ECameraSubsystem.h"
 #include "Extensions/AnimatedCameraExtension.h"
 #include "Extensions/KeyframeExtension.h"
 #include "Extensions/MixingCameraExtension.h"
@@ -11,6 +11,7 @@
 #include "Components/ECameraComponentAim.h"
 #include "Utils/ECameraLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/GameInstance.h"
 #include "Camera/CameraComponent.h"
 
 AECameraBase::AECameraBase(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -47,15 +48,13 @@ void AECameraBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (GetSettingsComponent()->IsActive())
+	if (bIsTransitory)
 	{
-		if (bIsTransitory)
+		ElaspedTimeOnViewTarget += DeltaTime;
+
+		if (ElaspedTimeOnViewTarget >= LifeTime)
 		{
-			ElaspedTimeOnViewTarget += DeltaTime;
-			if (ElaspedTimeOnViewTarget >= LifeTime)
-			{
-				GetSettingsComponent()->ECameraManager->TerminateActiveCamera();
-			}
+			UECameraLibrary::TerminateActiveCamera(this);
 		}
 	}
 }
@@ -173,17 +172,35 @@ void AECameraBase::ResetOnBecomeViewTarget(bool InputbIsTransitory, float InputL
 
 void AECameraBase::AddCamera()
 {
-	if (IsValid(CameraSettingsComponent))
+	if (const UWorld* World = GetWorld())
 	{
-		CameraSettingsComponent->ECameraManager->AddCamera(this);
+		if (const UGameInstance* GameInstance = World->GetGameInstance())
+		{
+			if (UECameraSubsystem* Subsystem = GameInstance->GetSubsystem<UECameraSubsystem>())
+			{
+				if (IsValid(Subsystem))
+				{
+					Subsystem->AddCamera(this);
+				}
+			}
+		}
 	}
 }
 
 void AECameraBase::DestroyCamera()
 {
-	if (IsValid(CameraSettingsComponent))
+	if (const UWorld* World = GetWorld())
 	{
-		CameraSettingsComponent->ECameraManager->DestroyCamera(this);
+		if (const UGameInstance* GameInstance = World->GetGameInstance())
+		{
+			if (UECameraSubsystem* Subsystem = GameInstance->GetSubsystem<UECameraSubsystem>())
+			{
+				if (IsValid(Subsystem))
+				{
+					Subsystem->DestroyCamera(this);
+				}
+			}
+		}
 	}
 }
 

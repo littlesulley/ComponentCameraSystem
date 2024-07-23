@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
-#include "Core/ECameraManager.h"
 #include "ECameraHUD.generated.h"
 
 class UControlAim;
@@ -21,13 +20,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "ECameraHUD")
 	bool bShowCameraDebug = true;
 
-	UPROPERTY(EditAnywhere, Category = "ECameraHUD");
-	TObjectPtr<AECameraManager> ECameraManager;
-
-	FLinearColor FollowPositionColor = FLinearColor(0.95f, 0.55f, 0.55f, 0.8f);
-	FLinearColor AimPositionColor = FLinearColor(0.6f, 0.78f, 1.0f, 0.8f);
-	FLinearColor RectColor = FLinearColor(1.f, 1.f, 1.f, 0.4f);
-	FLinearColor MiscColor = FLinearColor(0.8f, 0.9f, 0.8f, 0.8f);
+	const FLinearColor FollowPositionColor = FLinearColor(0.95f, 0.55f, 0.55f, 0.8f);
+	const FLinearColor AimPositionColor = FLinearColor(0.6f, 0.78f, 1.0f, 0.8f);
+	const FLinearColor RectColor = FLinearColor(1.f, 1.f, 1.f, 0.4f);
+	const FLinearColor MiscColor = FLinearColor(0.8f, 0.9f, 0.8f, 0.8f);
 
 public:
 	virtual void DrawHUD() override;

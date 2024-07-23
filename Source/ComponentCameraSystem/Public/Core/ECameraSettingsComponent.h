@@ -13,7 +13,6 @@ class UECameraExtensionBase;
 class UECameraComponentBase;
 class UECameraComponentFollow;
 class UECameraComponentAim;
-class AECameraManager;
 
 UCLASS(Blueprintable, BlueprintType, classGroup = "ECamera")
 class COMPONENTCAMERASYSTEM_API UECameraSettingsComponent : public USceneComponent
@@ -67,9 +66,6 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "ECamera|AimTarget")
 	TObjectPtr<AActor> AimTarget;
-
-	UPROPERTY(BlueprintReadOnly, Category = "ECamera|ECameraManager")
-	TObjectPtr<AECameraManager> ECameraManager;
 
 public:
 	FOnPreTickComponent OnPreTickComponent;
@@ -138,9 +134,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "ECamera|Settings")
 	void AddExtension(UECameraExtensionBase* InExtension);
 
-	/** Get ECamera manager. */
-	AECameraManager* GetECameraManager() const;
-
 	/** Get FollowComponent. */
 	UECameraComponentFollow* GetFollowComponent() const;
 
@@ -169,8 +162,6 @@ public:
 	void SetForceActive(bool InForceActive);
 
 public:
-	/** Register ECamaraManager */
-	virtual void RegisterManager();
 	/** Initialize all components and binds functions to delegates. */
 	virtual void InitializeECameraComponents();
 	virtual void InitializeECameraComponent(UECameraComponentBase* Component);
