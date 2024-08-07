@@ -138,11 +138,11 @@ FReply FCameraBaseDetail::OnButtonClicked(AECameraBase* Camera)
 				NumChangedProperties = EditorUtilities::CopyActorProperties(Camera, CDO, CopyOptions);
 				
 				// Apply changes to CDO for Follow/Aim/Extensions, i.e., the instanced properties in ECameraSettingsComponent
-				// @TODO: This is UE's built-in function. Should investigate more to avoid potential glitches.
-				UEditorEngine::CopyPropertiesForUnrelatedObjects(Camera, CDO);
-
+				// @TODO: CopyPropertiesForUnrelatedObjects is UE's built-in function. Should investigate more to avoid potential glitches
 				UECameraSettingsComponent* SourceComponent = Cast<UECameraSettingsComponent>(Camera->GetComponentByClass(UECameraSettingsComponent::StaticClass()));
 				UECameraSettingsComponent* TargetComponent = Cast<UECameraSettingsComponent>(CDO->GetComponentByClass(UECameraSettingsComponent::StaticClass()));
+				UEditorEngine::FCopyPropertiesForUnrelatedObjectsParams CopyParams;
+				UEditorEngine::CopyPropertiesForUnrelatedObjects(SourceComponent, TargetComponent, CopyParams);
 				TargetComponent->PostReinitProperties();
 			}
 
