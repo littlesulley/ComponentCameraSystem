@@ -55,9 +55,6 @@ protected:
 	TArray<TObjectPtr<UECameraExtensionBase>> Extensions;
 
 protected:
-	/** ComponentContainer only contains follow component and aimcomponent, excluding extensions. */
-	TArray<TObjectPtr<UECameraComponentBase>> ComponentContainer;
-
 	/** Whether to enforce active. Used for mixing camera. */
 	bool bForceActive;
 
@@ -135,9 +132,11 @@ public:
 	void AddExtension(UECameraExtensionBase* InExtension);
 
 	/** Get FollowComponent. */
+	UFUNCTION(BlueprintCallable, Category = "ECamera|Settings")
 	UECameraComponentFollow* GetFollowComponent() const;
 
 	/** Set FollowComponent. */
+	UFUNCTION(BlueprintCallable, Category = "ECamera|Settings")
 	void SetFollowComponent(UECameraComponentFollow* InFollowComponent);
 
 	/** Get follow target. */
@@ -147,12 +146,15 @@ public:
 	AActor* GetAimTarget() const;
 
 	/** Get AimComponent. */
+	UFUNCTION(BlueprintCallable, Category = "ECamera|Settings")
 	UECameraComponentAim* GetAimComponent() const;
 
 	/** Set AimComponent. */
+	UFUNCTION(BlueprintCallable, Category = "ECamera|Settings")
 	void SetAimComponent(UECameraComponentAim* InAimComponent);
 
 	/** Get Extensions. */
+	UFUNCTION(BlueprintCallable, Category = "ECamera|Settings")
 	TArray<UECameraExtensionBase*> GetExtensions() const;
 
 	/** Get bForceActive. */

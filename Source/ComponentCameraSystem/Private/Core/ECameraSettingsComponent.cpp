@@ -47,15 +47,21 @@ void UECameraSettingsComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		OnPreTickComponent.Broadcast();
 		for (EStage Stage : TEnumRange<EStage>())
 		{
-			/** Follow component and aim component first. */
-			for (UECameraComponentBase* Component : ComponentContainer)
+			// In the order of Follow -> Aim -> Extension.
+			if (FollowComponent && FollowComponent->GetStage() == Stage)
 			{
-				if (Component != nullptr && Component->GetStage() == Stage) Component->UpdateComponent(DeltaTime);		
+				FollowComponent->UpdateComponent(DeltaTime);
 			}
-			/** Then extensions. */
-			for (UECameraExtensionBase* Component : Extensions)
+			if (AimComponent && AimComponent->GetStage() == Stage)
 			{
-				if (Component != nullptr && Component->GetStage() == Stage) Component->UpdateComponent(DeltaTime);
+				AimComponent->UpdateComponent(DeltaTime);
+			}
+			for (UECameraExtensionBase* Extension : Extensions)
+			{
+				if (Extension && Extension->GetStage() == Stage)
+				{
+					Extension->UpdateComponent(DeltaTime);
+				}
 			}
 		}
 		OnPostTickComponent.Broadcast();
@@ -158,6 +164,7 @@ void UECameraSettingsComponent::SetFollowComponent(UECameraComponentFollow* InFo
 	{
 		FollowComponent = InFollowComponent;
 		FollowComponent->SetFollowTarget(FollowTarget);
+		InitializeECameraComponent(InFollowComponent);
 	}
 }
 
@@ -232,6 +239,7 @@ void UECameraSettingsComponent::AddExtension(UECameraExtensionBase* InExtension)
 		}
 
 		Extensions.Add(InExtension);
+		InitializeECameraComponent(InExtension);
 	}
 }
 
@@ -251,6 +259,7 @@ void UECameraSettingsComponent::SetAimComponent(UECameraComponentAim* InAimCompo
 	{
 		AimComponent = InAimComponent;
 		AimComponent->SetAimTarget(AimTarget);
+		InitializeECameraComponent(InAimComponent);
 	}
 }
 
@@ -261,19 +270,15 @@ TArray<UECameraExtensionBase*> UECameraSettingsComponent::GetExtensions() const
 
 void UECameraSettingsComponent::InitializeECameraComponents()
 {
-	ComponentContainer.Empty();
-
 	if (FollowComponent != nullptr)
 	{
 		InitializeECameraComponent(FollowComponent);
 		FollowTarget = FollowComponent->GetFollowTarget();
-		ComponentContainer.Add(FollowComponent);
 	}
 	if (AimComponent != nullptr)
 	{
 		InitializeECameraComponent(AimComponent);
 		AimTarget = AimComponent->GetAimTarget();
-		ComponentContainer.Add(AimComponent);
 	}
 	for (UECameraExtensionBase* Extension : Extensions)
 		if (Extension != nullptr) 

@@ -1,6 +1,6 @@
 // Copyright 2023 by Sulley. All Rights Reserved.
 
-#include "KeyframeExtensionDetail.h"
+#include "DetailsCustomization/KeyframeExtensionDetail.h"
 
 #include "DetailLayoutBuilder.h"
 #include "DetailCategoryBuilder.h"

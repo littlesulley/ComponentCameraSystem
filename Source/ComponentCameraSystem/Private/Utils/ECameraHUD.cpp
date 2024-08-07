@@ -43,7 +43,7 @@ void AECameraHUD::DrawHUD()
 	if (bShowCameraDebug)
 	{
 		AECameraBase* ActiveCamera = UECameraLibrary::GetActiveCamera(this);
-		if (ActiveCamera && ActiveCamera->GetSettingsComponent()->IsActive())
+		if (ActiveCamera && ActiveCamera->GetSettingsComponent() && ActiveCamera->GetSettingsComponent()->IsActive())
 		{
 			UECameraSettingsComponent* CameraSettingsComponent = ActiveCamera->GetSettingsComponent();
 
